@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-accent: #7c3aed;
+  --color-accent-secondary: #0891b2;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+}
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-bg-hover: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  
+  --sh-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --sh: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --sh-lg: 0 16px 48px rgba(124, 58, 237, 0.1);
+  --glow: 0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: #0f172a;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--sh);
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(139, 92, 246, 0.4);
+  background: var(--glass-bg-hover);
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -30px); }
+}
+
+.animate-float {
+  animation: float 12s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float 15s ease-in-out infinite reverse;
+}
+
+.animate-float-slow {
+  animation: float 18s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-blink {
+  animation: blink 2s infinite;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #c4b5fd, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-accent {
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
