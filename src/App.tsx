@@ -77,12 +77,14 @@ const DIMENSIONS: Record<string, Dimension> = {
 // --- Components ---
 
 export default function App() {
-  const [step, setStep] = useState<'start' | 'contact' | 'quiz' | 'result'>('start');
+  const [step, setStep] = useState<'start' | 'contact' | 'quiz' | 'result' | 'success'>('start');
   const [userData, setUserData] = useState<UserData>({ name: '', phone: '', email: '', co: '' });
   const [errors, setErrors] = useState<Partial<Record<keyof UserData, string>>>({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [score, setScore] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const totalScore = useMemo(() => {
     return Object.values(answers).reduce((acc: number, s: number) => acc + s, 0);
@@ -168,9 +170,10 @@ export default function App() {
   const handleStart = () => setStep('quiz');
   const handleProceed = async () => {
     if (validateContact()) {
+      setIsSubmitting(true);
+      setSubmitError(null);
       try {
-        // Send data to Google Sheets via backend API
-        await fetch('/api/submit-quiz', {
+        const response = await fetch('/api/submit-quiz', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -183,10 +186,21 @@ export default function App() {
             dimensionScores
           }),
         });
-      } catch (error) {
-        console.error('Failed to submit to Google Sheets:', error);
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || result.message || `Server error: ${response.status}`);
+        }
+
+        console.log('Submission successful, ID:', result.id);
+        setStep('result');
+      } catch (error: any) {
+        console.error('Failed to submit to Supabase:', error);
+        setSubmitError(error.message || 'Không thể kết nối với máy chủ. Vui lòng kiểm tra lại kết nối mạng.');
+      } finally {
+        setIsSubmitting(false);
       }
-      setStep('result');
     }
   };
   const handlePick = (qi: number, s: number) => {
@@ -397,18 +411,35 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 bg-success/10 border border-success/20 rounded-2xl p-4 mb-8">
+              <div className="flex items-start gap-4 bg-success/10 border border-success/20 rounded-2xl p-4 mb-6">
                 <Lock className="w-5 h-5 text-success shrink-0 mt-0.5" />
                 <p className="text-xs text-emerald-800 leading-relaxed">
                   <strong className="text-emerald-900">Cam kết bảo mật:</strong> Thông tin của bạn được mã hóa chuẩn SSL 256-bit. Chúng tôi tuyệt đối không chia sẻ dữ liệu với bên thứ ba.
                 </p>
               </div>
 
+              {submitError && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-bold text-red-900">Lỗi gửi dữ liệu</p>
+                    <p className="text-[11px] text-red-700 leading-relaxed">{submitError}</p>
+                  </div>
+                </div>
+              )}
+
               <button 
                 onClick={handleProceed}
-                className="w-full py-4.5 text-base font-bold rounded-xl bg-gradient-accent text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl"
+                disabled={isSubmitting}
+                className="w-full py-4.5 text-base font-bold rounded-xl bg-gradient-accent text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
               >
-                Xem kết quả đánh giá AI →
+                {isSubmitting ? (
+                  <>
+                    <RefreshCcw className="w-5 h-5 animate-spin" /> Đang xử lý...
+                  </>
+                ) : (
+                  <>Xem kết quả đánh giá AI →</>
+                )}
               </button>
             </motion.div>
           )}

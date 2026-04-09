@@ -31,7 +31,9 @@ async function startServer() {
 
       const supabase = createClient(supabaseUrl, supabaseKey);
 
-      const { error: supabaseError } = await supabase
+      console.log(`Attempting to save to Supabase table 'quiz_submissions' at ${supabaseUrl}`);
+
+      const { data, error: supabaseError } = await supabase
         .from('quiz_submissions')
         .insert([
           {
@@ -45,13 +47,21 @@ async function startServer() {
             answers: answers,
             created_at: new Date().toISOString()
           }
-        ]);
+        ])
+        .select();
 
       if (supabaseError) {
-        throw supabaseError;
+        console.error('Supabase Insert Error:', supabaseError);
+        throw new Error(`Supabase Error: ${supabaseError.message} (Code: ${supabaseError.code})`);
       }
 
-      res.json({ success: true, message: 'Data saved to Supabase' });
+      console.log('Successfully saved to Supabase:', data);
+
+      res.json({ 
+        success: true, 
+        message: 'Data saved to Supabase',
+        id: data?.[0]?.id 
+      });
     } catch (error: any) {
       console.error('Error saving to Supabase:', error);
       res.status(500).json({ 
