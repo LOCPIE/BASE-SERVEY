@@ -187,7 +187,15 @@ export default function App() {
           }),
         });
 
-        const result = await response.json();
+        const contentType = response.headers.get("content-type");
+        let result;
+        
+        if (contentType && contentType.includes("application/json")) {
+          result = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(`Server returned non-JSON response: ${text.slice(0, 100)}...`);
+        }
 
         if (!response.ok) {
           throw new Error(result.error || result.message || `Server error: ${response.status}`);

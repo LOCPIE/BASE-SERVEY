@@ -16,7 +16,12 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Route for Google Sheets submission
+  // Health check endpoint
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', environment: process.env.NODE_ENV || 'development' });
+  });
+
+  // API Route for quiz submission
   app.post('/api/submit-quiz', async (req, res) => {
     try {
       const { userData, answers, totalScore, percentageScore, dimensionScores } = req.body;
