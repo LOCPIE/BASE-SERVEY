@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from './supabaseClient';
 import { 
   Bot, 
   Clock, 
@@ -173,39 +174,31 @@ export default function App() {
       setIsSubmitting(true);
       setSubmitError(null);
       try {
-        const response = await fetch('/api/submit-quiz', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userData,
-            answers,
-            totalScore,
-            percentageScore,
-            dimensionScores
-          }),
-        });
+        const { error: supabaseError } = await supabase
+          .from('quiz_submissions')
+          .insert([
+            {
+              name: userData.name,
+              phone: userData.phone,
+              email: userData.email,
+              company: userData.co,
+              total_score: totalScore,
+              percentage_score: percentageScore,
+              dimension_scores: dimensionScores,
+              answers: answers,
+              created_at: new Date().toISOString()
+            }
+          ]);
 
-        const contentType = response.headers.get("content-type");
-        let result;
-        
-        if (contentType && contentType.includes("application/json")) {
-          result = await response.json();
-        } else {
-          const text = await response.text();
-          throw new Error(`Server returned non-JSON response: ${text.slice(0, 100)}...`);
+        if (supabaseError) {
+          throw new Error(`Supabase Error: ${supabaseError.message}`);
         }
 
-        if (!response.ok) {
-          throw new Error(result.error || result.message || `Server error: ${response.status}`);
-        }
-
-        console.log('Submission successful, ID:', result.id);
+        console.log('Submission successful');
         setStep('result');
       } catch (error: any) {
         console.error('Failed to submit to Supabase:', error);
-        setSubmitError(error.message || 'Không thể kết nối với máy chủ. Vui lòng kiểm tra lại kết nối mạng.');
+        setSubmitError(error.message || 'Không thể kết nối với Supabase. Vui lòng kiểm tra lại cấu hình.');
       } finally {
         setIsSubmitting(false);
       }
