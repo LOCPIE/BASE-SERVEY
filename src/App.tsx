@@ -304,8 +304,13 @@ export default function App() {
               <div className="flex items-center gap-3.5 bg-accent/5 border border-accent/10 rounded-2xl p-4 mb-8">
                 <div className="flex -space-x-2.5">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gradient-accent flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-                      {String.fromCharCode(64 + i)}
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden shadow-sm">
+                      <img 
+                        src={`https://picsum.photos/seed/person${i}/100/100`} 
+                        alt={`User ${i}`}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
                     </div>
                   ))}
                 </div>
@@ -643,19 +648,19 @@ export default function App() {
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3C/g%3E%3C/svg%3E")` }} />
                 
                 <h3 className="text-2xl font-extrabold text-slate-900 mb-3 tracking-tight relative">
-                  {userData.name ? `${userData.name.split(' ').pop()}, đã đến lúc kích hoạt AI?` : 'Sẵn sàng kích hoạt chiến lược AI?'}
+                  {userData.name ? `${userData.name.split(' ').pop()}, đã đến lúc doanh nghiệp chuyển đổi AI?` : 'Sẵn sàng kích hoạt chiến lược AI?'}
                 </h3>
                 <p className="text-slate-600 text-sm leading-relaxed max-w-[420px] mx-auto mb-8 relative">
                   Đội ngũ chuyên gia của chúng tôi có thể giúp bạn xây lộ trình chuyển đổi số với AI phù hợp đặc thù riêng.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center relative">
-                  <button 
-                    onClick={() => alert('Cảm ơn! Chuyên gia của chúng tôi sẽ liên hệ trong 24h.')}
+                  <a 
+                    href="tel:0877724333"
                     className="bg-slate-900 text-white px-8 py-4 text-sm font-bold rounded-xl shadow-lg transition-all hover:-translate-y-1 hover:shadow-slate-200 flex items-center justify-center gap-2"
                   >
-                    <Phone className="w-4 h-4" /> Đặt lịch tư vấn ngay
-                  </button>
+                    <Phone className="w-4 h-4" /> Gọi ngay: 0877724333
+                  </a>
                   <button 
                     onClick={handleRestart}
                     className="bg-white border-1.5 border-slate-200 text-slate-600 px-7 py-3.5 text-sm font-semibold rounded-xl transition-all hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 flex items-center justify-center gap-2"
