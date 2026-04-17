@@ -347,39 +347,6 @@ export default function App() {
                 <p className="text-sm text-slate-500">Báo cáo đánh giá chi tiết sẽ được hiển thị ngay sau khi bạn cung cấp thông tin.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-slate-700">
-                    Họ và tên <span className="text-slate-400 font-normal text-[10px]">(tùy chọn)</span>
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
-                      type="text" 
-                      placeholder="Nguyễn Văn A"
-                      value={userData.name}
-                      onChange={e => setUserData({ ...userData, name: e.target.value })}
-                      className="w-full bg-slate-50 border-1.5 border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm"
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-slate-700">
-                    Tên doanh nghiệp <span className="text-slate-400 font-normal text-[10px]">(tùy chọn)</span>
-                  </label>
-                  <div className="relative">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
-                      type="text" 
-                      placeholder="Công ty TNHH ABC"
-                      value={userData.co}
-                      onChange={e => setUserData({ ...userData, co: e.target.value })}
-                      className="w-full bg-slate-50 border-1.5 border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
