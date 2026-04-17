@@ -157,7 +157,6 @@ export default function App() {
 
   const validateContact = () => {
     const newErrors: Partial<Record<keyof UserData, string>> = {};
-    if (!userData.name.trim()) newErrors.name = 'Vui lòng nhập họ tên';
     if (!userData.phone.trim() || !/^(0|\+84)[0-9]{9}$/.test(userData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'SĐT không hợp lệ (10 số)';
     }
@@ -350,8 +349,8 @@ export default function App() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                    Họ và tên <span className="text-accent-secondary">*</span>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Họ và tên <span className="text-slate-400 font-normal text-[10px]">(tùy chọn)</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -360,10 +359,9 @@ export default function App() {
                       placeholder="Nguyễn Văn A"
                       value={userData.name}
                       onChange={e => setUserData({ ...userData, name: e.target.value })}
-                      className={`w-full bg-slate-50 border-1.5 ${errors.name ? 'border-danger bg-danger/5' : 'border-slate-200'} rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm`}
+                      className="w-full bg-slate-50 border-1.5 border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm"
                     />
                   </div>
-                  {errors.name && <span className="text-[11px] text-red-500 flex items-center gap-1 font-medium"><AlertCircle className="w-3 h-3" /> {errors.name}</span>}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-semibold text-slate-700">
