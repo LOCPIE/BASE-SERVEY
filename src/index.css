@@ -1,9 +1,11 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+@import url('https://fonts.cdnfonts.com/css/google-sans');
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @theme {
-  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Roboto", "Google Sans", "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Roboto", "Google Sans", "Space Grotesk", sans-serif;
 
   --color-bg: #ffffff;
   --color-bg-secondary: #f8fafc;
@@ -73,7 +75,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #c4b5fd, #06b6d4);
+  background: linear-gradient(135deg, #4f46e5, #0ea5e9);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './supabaseClient';
+import Home from './components/Home';
+import DigitalTransformationSurvey from './components/DigitalTransformationSurvey';
 import { 
   Bot, 
   Clock, 
@@ -78,6 +80,45 @@ const DIMENSIONS: Record<string, Dimension> = {
 // --- Components ---
 
 export default function App() {
+  const [route, setRoute] = useState(() => {
+    const path = window.location.pathname;
+    if (path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
+    return path === '/khao-sat-chuyen-doi-ai' ? '/khao-sat-chuyen-doi-ai' : '/';
+  });
+
+  const navigate = (to: string) => {
+    window.history.pushState({}, '', to);
+    setRoute(to);
+    window.scrollTo(0, 0);
+    if (to === '/') {
+      setStep('start');
+      setUserData({ name: '', phone: '', email: '', co: '' });
+      setAnswers({});
+      setCurrentQuestion(0);
+      setErrors({});
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/khao-sat-chuyen-doi-so') {
+        setRoute('/khao-sat-chuyen-doi-so');
+      } else {
+        setRoute(path === '/khao-sat-chuyen-doi-ai' ? '/khao-sat-chuyen-doi-ai' : '/');
+        if (path !== '/khao-sat-chuyen-doi-ai') {
+          setStep('start');
+          setUserData({ name: '', phone: '', email: '', co: '' });
+          setAnswers({});
+          setCurrentQuestion(0);
+          setErrors({});
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [step, setStep] = useState<'start' | 'contact' | 'quiz' | 'result' | 'success'>('start');
   const [userData, setUserData] = useState<UserData>({ name: '', phone: '', email: '', co: '' });
   const [errors, setErrors] = useState<Partial<Record<keyof UserData, string>>>({});
@@ -173,7 +214,7 @@ export default function App() {
       setIsSubmitting(true);
       setSubmitError(null);
       try {
-        const { error: supabaseError } = await supabase
+        const dbPromise = supabase
           .from('quiz_submissions')
           .insert([
             {
@@ -189,6 +230,12 @@ export default function App() {
             }
           ]);
 
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Network timeout')), 2000)
+        );
+
+        const { error: supabaseError } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
         if (supabaseError) {
           throw new Error(`Supabase Error: ${supabaseError.message}`);
         }
@@ -196,8 +243,29 @@ export default function App() {
         console.log('Submission successful');
         setStep('result');
       } catch (error: any) {
-        console.error('Failed to submit to Supabase:', error);
-        setSubmitError(error.message || 'Không thể kết nối với Supabase. Vui lòng kiểm tra lại cấu hình.');
+        console.warn('Failed to submit AI survey to Supabase, falling back to local cache:', error);
+        
+        try {
+          const backup = JSON.parse(localStorage.getItem('quiz_submissions_backup') || '[]');
+          backup.push({
+            name: userData.name,
+            phone: userData.phone,
+            email: userData.email,
+            company: userData.co,
+            total_score: totalScore,
+            percentage_score: percentageScore,
+            dimension_scores: dimensionScores,
+            answers: answers,
+            survey_type: 'ai_transformation',
+            created_at: new Date().toISOString()
+          });
+          localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
+        } catch (e) {
+          console.error('Failed to save fallback submission:', e);
+        }
+
+        // Proceed gracefully without blocking the user interface
+        setStep('result');
       } finally {
         setIsSubmitting(false);
       }
@@ -226,6 +294,14 @@ export default function App() {
     setErrors({});
   };
 
+  if (route === '/') {
+    return <Home onNavigate={navigate} />;
+  }
+
+  if (route === '/khao-sat-chuyen-doi-so') {
+    return <DigitalTransformationSurvey onNavigate={navigate} />;
+  }
+
   return (
     <div className="min-h-screen relative overflow-hidden selection:bg-accent/30 bg-white">
       {/* Top Accent Bar */}
@@ -236,14 +312,26 @@ export default function App() {
       <div className="fixed -bottom-[100px] -left-[150px] w-[450px] h-[450px] rounded-full bg-accent-secondary/10 blur-[100px] animate-float-reverse pointer-events-none mix-blend-multiply opacity-40" />
       <div className="fixed bottom-[20%] right-[10%] w-[350px] h-[350px] rounded-full bg-success/10 blur-[100px] animate-float-slow pointer-events-none mix-blend-multiply opacity-40" />
 
-      <div className="container max-w-[700px] mx-auto px-4 pt-14 pb-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-20 relative z-10 transition-all duration-300">
         {/* Header */}
         <header className="text-center py-10">
-          <div className="flex items-center justify-center gap-3 mb-7">
-            <div className="w-10 h-10 bg-gradient-accent rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)]">
-              <Bot className="text-white w-6 h-6" />
+          <div className="flex items-center justify-between gap-3 mb-7">
+            <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+              <div className="bg-white px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-sm border border-slate-150">
+                <img 
+                  src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
+                  alt="Base.vn" 
+                  className="h-5 object-contain"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
             </div>
-            <span className="font-display font-bold text-lg tracking-tight text-slate-900">AI Readiness</span>
+            <button 
+              onClick={() => navigate('/')}
+              className="text-xs text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 font-semibold border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg cursor-pointer"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> Quay lại
+            </button>
           </div>
           
           <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent text-[11px] font-bold tracking-[0.08em] uppercase px-4 py-1.5 rounded-full mb-5 font-display">
@@ -280,7 +368,7 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="glass-card rounded-[24px] p-8 sm:p-10 shadow-xl relative overflow-hidden"
+              className="max-w-4xl mx-auto glass-card rounded-[24px] p-8 sm:p-10 shadow-xl relative overflow-hidden"
             >
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 text-center transition-all hover:border-accent/40 hover:bg-white hover:-translate-y-1 hover:shadow-md">
@@ -337,7 +425,7 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="glass-card rounded-[24px] p-8 sm:p-10 shadow-xl"
+              className="max-w-4xl mx-auto glass-card rounded-[24px] p-8 sm:p-10 shadow-xl"
             >
               <div className="mb-8">
                 <div className="inline-flex items-center bg-accent-secondary/10 border border-accent-secondary/20 text-accent-secondary text-[10px] font-bold px-3.5 py-1.5 rounded-full mb-4 tracking-wider uppercase font-display">
