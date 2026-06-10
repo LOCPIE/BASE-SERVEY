@@ -254,7 +254,8 @@ export default function App() {
             total_score: totalScore,
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
-            answers: answers,
+            answers: { ...answers, survey_type: 'ai_transformation' },
+            survey_type: 'ai_transformation',
             created_at: new Date().toISOString()
           }
         ]);
@@ -284,7 +285,7 @@ export default function App() {
           total_score: totalScore,
           percentage_score: percentageScore,
           dimension_scores: dimensionScores,
-          answers: answers,
+          answers: { ...answers, survey_type: 'ai_transformation' },
           survey_type: 'ai_transformation',
           created_at: new Date().toISOString()
         });

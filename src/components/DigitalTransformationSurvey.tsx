@@ -726,6 +726,7 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
             answers: { ...answers, _custom_inputs: inputs, survey_type: 'digital_transformation' },
+            survey_type: 'digital_transformation',
             created_at: new Date().toISOString()
           }
         ]);

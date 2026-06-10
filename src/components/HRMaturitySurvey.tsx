@@ -300,7 +300,7 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
             total_score: totalScore,
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
-            answers: answers,
+            answers: { ...answers, survey_type: 'hr_maturity' },
             survey_type: 'hr_maturity',
             created_at: new Date().toISOString()
           }
@@ -331,7 +331,7 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
           total_score: totalScore,
           percentage_score: percentageScore,
           dimension_scores: dimensionScores,
-          answers: answers,
+          answers: { ...answers, survey_type: 'hr_maturity' },
           survey_type: 'hr_maturity',
           created_at: new Date().toISOString()
         });

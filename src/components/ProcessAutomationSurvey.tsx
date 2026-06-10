@@ -313,7 +313,7 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
             total_score: totalScore,
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
-            answers: answers,
+            answers: { ...answers, survey_type: 'process_automation' },
             survey_type: 'process_automation',
             created_at: new Date().toISOString()
           }
@@ -344,7 +344,7 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
           total_score: totalScore,
           percentage_score: percentageScore,
           dimension_scores: dimensionScores,
-          answers: answers,
+          answers: { ...answers, survey_type: 'process_automation' },
           survey_type: 'process_automation',
           created_at: new Date().toISOString()
         });

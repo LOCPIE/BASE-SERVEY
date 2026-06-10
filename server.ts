@@ -24,7 +24,7 @@ async function startServer() {
   // API Route for quiz submission
   app.post('/api/submit-quiz', async (req, res) => {
     try {
-      const { userData, answers, totalScore, percentageScore, dimensionScores } = req.body;
+      const { userData, answers, totalScore, percentageScore, dimensionScores, survey_type } = req.body;
 
       // Supabase Integration
       const supabaseUrl = process.env.SUPABASE_URL || "https://irrjgqhxtfzwjjzdonyp.supabase.co";
@@ -49,7 +49,8 @@ async function startServer() {
             total_score: totalScore,
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
-            answers: answers,
+            answers: survey_type ? { ...answers, survey_type } : answers,
+            survey_type: survey_type || null,
             created_at: new Date().toISOString()
           }
         ])
