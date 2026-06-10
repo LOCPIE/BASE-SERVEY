@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './supabaseClient';
 import Home from './components/Home';
 import DigitalTransformationSurvey from './components/DigitalTransformationSurvey';
+import HRMaturitySurvey from './components/HRMaturitySurvey';
+import ProcessAutomationSurvey from './components/ProcessAutomationSurvey';
 import { 
   Bot, 
   Clock, 
@@ -85,6 +87,8 @@ export default function App() {
     const hash = window.location.hash;
     if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
     if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') return '/khao-sat-chuyen-doi-ai';
+    if (hash === '#chi-so-quan-tri-nhan-su' || path === '/chi-so-quan-tri-nhan-su') return '/chi-so-quan-tri-nhan-su';
+    if (hash === '#chi-so-tu-dong-hoa-quy-trinh' || path === '/chi-so-tu-dong-hoa-quy-trinh') return '/chi-so-tu-dong-hoa-quy-trinh';
     return '/';
   });
 
@@ -92,6 +96,8 @@ export default function App() {
     let target = to;
     if (to === '/khao-sat-chuyen-doi-so') target = '/#khao-sat-chuyen-doi-so';
     else if (to === '/khao-sat-chuyen-doi-ai') target = '/#khao-sat-chuyen-doi-ai';
+    else if (to === '/chi-so-quan-tri-nhan-su') target = '/#chi-so-quan-tri-nhan-su';
+    else if (to === '/chi-so-tu-dong-hoa-quy-trinh') target = '/#chi-so-tu-dong-hoa-quy-trinh';
     
     window.history.pushState({}, '', target);
     setRoute(to);
@@ -113,6 +119,10 @@ export default function App() {
         setRoute('/khao-sat-chuyen-doi-so');
       } else if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') {
         setRoute('/khao-sat-chuyen-doi-ai');
+      } else if (hash === '#chi-so-quan-tri-nhan-su' || path === '/chi-so-quan-tri-nhan-su') {
+        setRoute('/chi-so-quan-tri-nhan-su');
+      } else if (hash === '#chi-so-tu-dong-hoa-quy-trinh' || path === '/chi-so-tu-dong-hoa-quy-trinh') {
+        setRoute('/chi-so-tu-dong-hoa-quy-trinh');
       } else {
         setRoute('/');
         setStep('start');
@@ -317,6 +327,14 @@ export default function App() {
 
   if (route === '/khao-sat-chuyen-doi-so') {
     return <DigitalTransformationSurvey onNavigate={navigate} />;
+  }
+
+  if (route === '/chi-so-quan-tri-nhan-su') {
+    return <HRMaturitySurvey onNavigate={navigate} />;
+  }
+
+  if (route === '/chi-so-tu-dong-hoa-quy-trinh') {
+    return <ProcessAutomationSurvey onNavigate={navigate} />;
   }
 
   return (

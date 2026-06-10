@@ -355,7 +355,12 @@ export default function Home({ onNavigate }: HomeProps) {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                 className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all hover:border-accent/30 group cursor-pointer flex flex-col justify-between"
-                onClick={() => onNavigate(idx === 0 ? '/khao-sat-chuyen-doi-so' : '/khao-sat-chuyen-doi-ai')}
+                onClick={() => onNavigate(
+                  idx === 0 ? '/khao-sat-chuyen-doi-so' : 
+                  idx === 2 ? '/chi-so-quan-tri-nhan-su' : 
+                  idx === 3 ? '/chi-so-tu-dong-hoa-quy-trinh' :
+                  '/khao-sat-chuyen-doi-ai'
+                )}
               >
                 <div>
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 border ${a.colorBg}`}>
