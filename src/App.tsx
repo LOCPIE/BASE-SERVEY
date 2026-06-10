@@ -82,12 +82,18 @@ const DIMENSIONS: Record<string, Dimension> = {
 export default function App() {
   const [route, setRoute] = useState(() => {
     const path = window.location.pathname;
-    if (path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
-    return path === '/khao-sat-chuyen-doi-ai' ? '/khao-sat-chuyen-doi-ai' : '/';
+    const hash = window.location.hash;
+    if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
+    if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') return '/khao-sat-chuyen-doi-ai';
+    return '/';
   });
 
   const navigate = (to: string) => {
-    window.history.pushState({}, '', to);
+    let target = to;
+    if (to === '/khao-sat-chuyen-doi-so') target = '/#khao-sat-chuyen-doi-so';
+    else if (to === '/khao-sat-chuyen-doi-ai') target = '/#khao-sat-chuyen-doi-ai';
+    
+    window.history.pushState({}, '', target);
     setRoute(to);
     window.scrollTo(0, 0);
     if (to === '/') {
@@ -102,21 +108,26 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       const path = window.location.pathname;
-      if (path === '/khao-sat-chuyen-doi-so') {
+      const hash = window.location.hash;
+      if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') {
         setRoute('/khao-sat-chuyen-doi-so');
+      } else if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') {
+        setRoute('/khao-sat-chuyen-doi-ai');
       } else {
-        setRoute(path === '/khao-sat-chuyen-doi-ai' ? '/khao-sat-chuyen-doi-ai' : '/');
-        if (path !== '/khao-sat-chuyen-doi-ai') {
-          setStep('start');
-          setUserData({ name: '', phone: '', email: '', co: '' });
-          setAnswers({});
-          setCurrentQuestion(0);
-          setErrors({});
-        }
+        setRoute('/');
+        setStep('start');
+        setUserData({ name: '', phone: '', email: '', co: '' });
+        setAnswers({});
+        setCurrentQuestion(0);
+        setErrors({});
       }
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, []);
 
   const [step, setStep] = useState<'start' | 'contact' | 'quiz' | 'result' | 'success'>('start');
