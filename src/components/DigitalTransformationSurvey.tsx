@@ -689,6 +689,9 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
 
   const validateContact = () => {
     const newErrors: Partial<Record<keyof UserData, string>> = {};
+    if (!userData.name.trim()) {
+      newErrors.name = 'Vui lòng điền họ và tên';
+    }
     if (!userData.phone.trim() || !/^(0|\+84)[0-9]{9}$/.test(userData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'SĐT không hợp lệ (10 số)';
     }
@@ -699,47 +702,22 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleStart = () => setStep('quiz');
+  const handleStart = () => setStep('contact');
+
+  const handleProceedToQuiz = () => {
+    if (validateContact()) {
+      setStep('quiz');
+    }
+  };
 
   const handleProceedSubmit = async () => {
-    if (validateContact()) {
-      setIsSubmitting(true);
-      setSubmitError(null);
-      try {
-        const dbPromise = supabase
-          .from('quiz_submissions')
-          .insert([
-            {
-              name: userData.name,
-              phone: userData.phone,
-              email: userData.email,
-              company: userData.co,
-              total_score: totalScore,
-              percentage_score: percentageScore,
-              dimension_scores: dimensionScores,
-              answers: { ...answers, _custom_inputs: inputs, survey_type: 'digital_transformation' },
-              created_at: new Date().toISOString()
-            }
-          ]);
-
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Network timeout')), 2000)
-        );
-
-        const { error: supabaseError } = await Promise.race([dbPromise, timeoutPromise]) as any;
-
-        if (supabaseError) {
-          throw new Error(`Supabase Error: ${supabaseError.message}`);
-        }
-
-        console.log('Submission detailed successful');
-        setStep('result');
-      } catch (error: any) {
-        console.warn('Failed to submit DX to Supabase, falling back to local cache:', error);
-        
-        try {
-          const backup = JSON.parse(localStorage.getItem('quiz_submissions_backup') || '[]');
-          backup.push({
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const dbPromise = supabase
+        .from('quiz_submissions')
+        .insert([
+          {
             name: userData.name,
             phone: userData.phone,
             email: userData.email,
@@ -749,17 +727,46 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
             dimension_scores: dimensionScores,
             answers: { ...answers, _custom_inputs: inputs, survey_type: 'digital_transformation' },
             created_at: new Date().toISOString()
-          });
-          localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
-        } catch (e) {
-          console.error('Failed to save fallback submission:', e);
-        }
+          }
+        ]);
 
-        // Non-blocking redirect so user can still see their beautiful assessment
-        setStep('result');
-      } finally {
-        setIsSubmitting(false);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout')), 2000)
+      );
+
+      const { error: supabaseError } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+      if (supabaseError) {
+        throw new Error(`Supabase Error: ${supabaseError.message}`);
       }
+
+      console.log('Submission detailed successful');
+      setStep('result');
+    } catch (error: any) {
+      console.warn('Failed to submit DX to Supabase, falling back to local cache:', error);
+      
+      try {
+        const backup = JSON.parse(localStorage.getItem('quiz_submissions_backup') || '[]');
+        backup.push({
+          name: userData.name,
+          phone: userData.phone,
+          email: userData.email,
+          company: userData.co,
+          total_score: totalScore,
+          percentage_score: percentageScore,
+          dimension_scores: dimensionScores,
+          answers: { ...answers, _custom_inputs: inputs, survey_type: 'digital_transformation' },
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
+      } catch (e) {
+        console.error('Failed to save fallback submission:', e);
+      }
+
+      // Non-blocking redirect so user can still see their beautiful assessment
+      setStep('result');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -830,24 +837,44 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
       {/* Top Accent Bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 z-50 shadow-[0_0_15px_rgba(79,70,229,0.2)]" />
 
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+          <div className="flex items-center cursor-pointer" onClick={() => onNavigate('/')}>
+            <div className="bg-white px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
+              <img 
+                src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
+                alt="Base.vn" 
+                className="h-6 object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+
+          <nav className="hidden md:flex items-center gap-8">
+            <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
+            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
+            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
+          </nav>
+
+          <button 
+            onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey', '_blank', 'noopener,noreferrer')}
+            className="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:shadow-md flex items-center gap-1.5 cursor-pointer"
+          >
+            Đăng Ký Demo <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
       {/* Decorative background blobs */}
       <div className="fixed -top-[200px] -right-[150px] w-[600px] h-[600px] rounded-full bg-indigo-500/8 blur-[100px] animate-float pointer-events-none mix-blend-multiply opacity-50" />
       <div className="fixed -bottom-[100px] -left-[150px] w-[450px] h-[450px] rounded-full bg-violet-500/8 blur-[100px] animate-float-reverse pointer-events-none mix-blend-multiply opacity-50" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-20 relative z-10 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 relative z-10 transition-all duration-300">
         {/* Header navigation bar */}
-        <header className="text-center py-10">
-          <div className="flex items-center justify-between gap-3 mb-7">
-            <div className="flex items-center cursor-pointer" onClick={() => onNavigate('/')}>
-              <div className="bg-white px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-sm border border-slate-150">
-                <img 
-                  src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
-                  alt="Base.vn" 
-                  className="h-5 object-contain"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-            </div>
+        <header className="text-center py-6">
+          <div className="flex items-center justify-start gap-3 mb-7">
             <button 
               onClick={() => onNavigate('/')}
               className="text-xs text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 font-semibold border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg cursor-pointer"
@@ -1083,16 +1110,40 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
               </div>
 
               {/* Submit segment */}
-              <div className="flex justify-center pt-8 pb-12">
+              {submitError && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl p-4 mb-6 max-w-[500px] mx-auto">
+                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-bold text-red-900">Lỗi ghi nhận kết quả</p>
+                    <p className="text-[11px] text-red-700 leading-relaxed">{submitError}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 pb-12 max-w-[500px] mx-auto">
                 <button 
-                  disabled={!allAnswered}
                   onClick={() => setStep('contact')}
-                  className="w-full max-w-[420px] py-4.5 rounded-2xl text-base font-bold transition-all flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl hover:-translate-y-0.5 hover:shadow-2xl disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none cursor-pointer"
+                  className="flex-1 py-4 text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-705 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <CheckCircle2 className="w-5.5 h-5.5" /> 
-                  {!allAnswered 
-                    ? `Hoàn thành ${QUESTIONS_DX.length - answeredCount} câu hỏi còn lại` 
-                    : 'Đến trang nhận báo cáo số'}
+                  <ChevronLeft className="w-4 h-4" /> Sửa thông tin
+                </button>
+                <button 
+                  disabled={!allAnswered || isSubmitting}
+                  onClick={handleProceedSubmit}
+                  className="flex-[2] py-4 text-base font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCcw className="w-5 h-5 animate-spin" /> Đang tính toán...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-5.5 h-5.5" /> 
+                      {!allAnswered 
+                        ? `Hoàn thành ${QUESTIONS_DX.length - answeredCount} câu hỏi còn lại` 
+                        : 'Chấm điểm & Xem báo cáo số →'}
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -1108,7 +1159,7 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
             >
               <div className="mb-8">
                 <div className="inline-flex items-center bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-bold px-3.5 py-1.5 rounded-full mb-4 tracking-wider uppercase font-display shadow-sm">
-                  📋 Bước cuối cùng — Điền Thông tin
+                  📋 Bước 1 / 2 — Điền Thông tin
                 </div>
                 <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-slate-900">Báo cáo đánh giá Chuyển Đổi Số</h2>
                 <p className="text-sm text-slate-500 leading-relaxed">Hãy bổ túc thông tin nhằm nhận định biên khảo chiến lược riêng biệt phù hợp theo quy mô và ngành nghề vận hành.</p>
@@ -1125,8 +1176,9 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
                       placeholder="Nguyễn Văn A"
                       value={userData.name}
                       onChange={e => setUserData({ ...userData, name: e.target.value })}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:shadow-inner outline-none rounded-xl py-3 px-4 text-sm font-medium transition-all"
+                      className={`w-full bg-slate-50 border ${errors.name ? 'border-red-400 bg-red-50/30' : 'border-slate-200'} rounded-xl py-3 px-4 text-sm font-medium outline-none transition-all focus:border-indigo-500 focus:bg-white`}
                     />
+                    {errors.name && <span className="text-[11px] text-red-500 flex items-center gap-1 font-medium"><AlertCircle className="w-3 h-3" /> {errors.name}</span>}
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-slate-700">
@@ -1185,36 +1237,19 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
                 </p>
               </div>
 
-              {submitError && (
-                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
-                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                  <div className="flex flex-col gap-1">
-                    <p className="text-xs font-bold text-red-900">Lỗi ghi nhận kết quả</p>
-                    <p className="text-[11px] text-red-700 leading-relaxed">{submitError}</p>
-                  </div>
-                </div>
-              )}
-
               <div className="flex gap-4">
                 <button 
-                  onClick={() => setStep('quiz')}
+                  onClick={() => setStep('start')}
                   className="flex-1 py-4 text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Sửa câu hỏi
+                  <ChevronLeft className="w-4 h-4" /> Quay lại
                 </button>
 
                 <button 
-                  onClick={handleProceedSubmit}
-                  disabled={isSubmitting}
-                  className="flex-[2] py-4 text-base font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={handleProceedToQuiz}
+                  className="flex-[2] py-4 text-base font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <RefreshCcw className="w-5 h-5 animate-spin" /> Đang tính toán...
-                    </>
-                  ) : (
-                    <>Chấm điểm & Xem báo cáo số →</>
-                  )}
+                  Tiếp tục câu hỏi khảo sát →
                 </button>
               </div>
             </motion.div>

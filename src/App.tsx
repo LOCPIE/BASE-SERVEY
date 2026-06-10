@@ -198,6 +198,9 @@ export default function App() {
 
   const validateContact = () => {
     const newErrors: Partial<Record<keyof UserData, string>> = {};
+    if (!userData.name.trim()) {
+      newErrors.name = 'Vui lòng điền họ và tên';
+    }
     if (!userData.phone.trim() || !/^(0|\+84)[0-9]{9}$/.test(userData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'SĐT không hợp lệ (10 số)';
     }
@@ -208,46 +211,21 @@ export default function App() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleStart = () => setStep('quiz');
-  const handleProceed = async () => {
+  const handleStart = () => setStep('contact');
+  const handleProceedToQuiz = () => {
     if (validateContact()) {
-      setIsSubmitting(true);
-      setSubmitError(null);
-      try {
-        const dbPromise = supabase
-          .from('quiz_submissions')
-          .insert([
-            {
-              name: userData.name,
-              phone: userData.phone,
-              email: userData.email,
-              company: userData.co,
-              total_score: totalScore,
-              percentage_score: percentageScore,
-              dimension_scores: dimensionScores,
-              answers: answers,
-              created_at: new Date().toISOString()
-            }
-          ]);
+      setStep('quiz');
+    }
+  };
 
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Network timeout')), 2000)
-        );
-
-        const { error: supabaseError } = await Promise.race([dbPromise, timeoutPromise]) as any;
-
-        if (supabaseError) {
-          throw new Error(`Supabase Error: ${supabaseError.message}`);
-        }
-
-        console.log('Submission successful');
-        setStep('result');
-      } catch (error: any) {
-        console.warn('Failed to submit AI survey to Supabase, falling back to local cache:', error);
-        
-        try {
-          const backup = JSON.parse(localStorage.getItem('quiz_submissions_backup') || '[]');
-          backup.push({
+  const handleProceedSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const dbPromise = supabase
+        .from('quiz_submissions')
+        .insert([
+          {
             name: userData.name,
             phone: userData.phone,
             email: userData.email,
@@ -256,29 +234,57 @@ export default function App() {
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
             answers: answers,
-            survey_type: 'ai_transformation',
             created_at: new Date().toISOString()
-          });
-          localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
-        } catch (e) {
-          console.error('Failed to save fallback submission:', e);
-        }
+          }
+        ]);
 
-        // Proceed gracefully without blocking the user interface
-        setStep('result');
-      } finally {
-        setIsSubmitting(false);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout')), 2000)
+      );
+
+      const { error: supabaseError } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+      if (supabaseError) {
+        throw new Error(`Supabase Error: ${supabaseError.message}`);
       }
+
+      console.log('Submission successful');
+      setStep('result');
+    } catch (error: any) {
+      console.warn('Failed to submit AI survey to Supabase, falling back to local cache:', error);
+      
+      try {
+        const backup = JSON.parse(localStorage.getItem('quiz_submissions_backup') || '[]');
+        backup.push({
+          name: userData.name,
+          phone: userData.phone,
+          email: userData.email,
+          company: userData.co,
+          total_score: totalScore,
+          percentage_score: percentageScore,
+          dimension_scores: dimensionScores,
+          answers: answers,
+          survey_type: 'ai_transformation',
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
+      } catch (e) {
+        console.error('Failed to save fallback submission:', e);
+      }
+
+      // Proceed gracefully without blocking the user interface
+      setStep('result');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   const handlePick = (qi: number, s: number) => {
     setAnswers(prev => ({ ...prev, [qi]: s }));
   };
   const handleNext = () => {
     if (currentQuestion < QUESTIONS.length - 1) {
       setCurrentQuestion(prev => prev + 1);
-    } else {
-      setStep('contact');
     }
   };
   const handlePrev = () => {
@@ -307,30 +313,50 @@ export default function App() {
       {/* Top Accent Bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-accent-secondary to-success z-50 shadow-[0_0_15px_rgba(139,92,246,0.2)]" />
 
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+          <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+            <div className="bg-white px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
+              <img 
+                src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
+                alt="Base.vn" 
+                className="h-6 object-contain"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+
+          <nav className="hidden md:flex items-center gap-8">
+            <button onClick={() => navigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
+            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
+            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
+          </nav>
+
+          <button 
+            onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey', '_blank', 'noopener,noreferrer')}
+            className="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:shadow-md flex items-center gap-1.5 cursor-pointer"
+          >
+            Đăng Ký Demo <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
       {/* Background Blobs */}
       <div className="fixed -top-[200px] -right-[150px] w-[600px] h-[600px] rounded-full bg-accent/10 blur-[100px] animate-float pointer-events-none mix-blend-multiply opacity-40" />
       <div className="fixed -bottom-[100px] -left-[150px] w-[450px] h-[450px] rounded-full bg-accent-secondary/10 blur-[100px] animate-float-reverse pointer-events-none mix-blend-multiply opacity-40" />
       <div className="fixed bottom-[20%] right-[10%] w-[350px] h-[350px] rounded-full bg-success/10 blur-[100px] animate-float-slow pointer-events-none mix-blend-multiply opacity-40" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-20 relative z-10 transition-all duration-300">
+ 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20 relative z-10 transition-all duration-300">
         {/* Header */}
-        <header className="text-center py-10">
-          <div className="flex items-center justify-between gap-3 mb-7">
-            <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
-              <div className="bg-white px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-sm border border-slate-150">
-                <img 
-                  src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
-                  alt="Base.vn" 
-                  className="h-5 object-contain"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-            </div>
+        <header className="text-center py-6">
+          <div className="flex items-center justify-start gap-3 mb-7">
             <button 
               onClick={() => navigate('/')}
               className="text-xs text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 font-semibold border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-lg cursor-pointer"
             >
-              <ChevronLeft className="w-3.5 h-3.5" /> Quay lại
+              <ChevronLeft className="w-3.5 h-3.5" /> Quay lại trang chủ
             </button>
           </div>
           
@@ -408,7 +434,7 @@ export default function App() {
 
               <button 
                 onClick={handleStart}
-                className="w-full py-4.5 text-base font-bold rounded-xl bg-gradient-accent text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2"
+                className="w-full py-4.5 text-base font-bold rounded-xl bg-gradient-accent text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer"
               >
                 Bắt đầu đánh giá ngay <ChevronRight className="w-5 h-5" />
               </button>
@@ -429,77 +455,104 @@ export default function App() {
             >
               <div className="mb-8">
                 <div className="inline-flex items-center bg-accent-secondary/10 border border-accent-secondary/20 text-accent-secondary text-[10px] font-bold px-3.5 py-1.5 rounded-full mb-4 tracking-wider uppercase font-display">
-                  📋 Bước 2 / 2 — Thông tin
+                  📋 Bước 1 / 2 — Thông tin
                 </div>
                 <h2 className="text-2xl font-extrabold tracking-tight mb-2 text-slate-900">Nhập thông tin nhận kết quả</h2>
-                <p className="text-sm text-slate-500">Báo cáo đánh giá chi tiết sẽ được hiển thị ngay sau khi bạn cung cấp thông tin.</p>
+                <p className="text-sm text-slate-500">Thông tin của bạn giúp hệ thống cá nhân hóa báo cáo đánh giá năng lực AI tối ưu nhất.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                    Số điện thoại <span className="text-accent-secondary">*</span>
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
-                      type="tel" 
-                      placeholder="0901 234 567"
-                      value={userData.phone}
-                      onChange={e => setUserData({ ...userData, phone: e.target.value })}
-                      className={`w-full bg-slate-50 border-1.5 ${errors.phone ? 'border-danger bg-danger/5' : 'border-slate-200'} rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm`}
-                    />
+              <div className="flex flex-col gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      Họ và tên <span className="text-accent-secondary">*</span>
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="text" 
+                        placeholder="Nguyễn Văn A"
+                        value={userData.name}
+                        onChange={e => setUserData({ ...userData, name: e.target.value })}
+                        className={`w-full bg-slate-50 border-1.5 ${errors.name ? 'border-danger bg-danger/5' : 'border-slate-200'} rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm`}
+                      />
+                    </div>
+                    {errors.name && <span className="text-[11px] text-red-500 flex items-center gap-1 font-medium"><AlertCircle className="w-3 h-3" /> {errors.name}</span>}
                   </div>
-                  {errors.phone && <span className="text-[11px] text-red-500 flex items-center gap-1 font-medium"><AlertCircle className="w-3 h-3" /> {errors.phone}</span>}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      Tên doanh nghiệp / Đơn vị <span className="text-slate-400 font-normal">(Tùy chọn)</span>
+                    </label>
+                    <div className="relative">
+                      <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="text" 
+                        placeholder="TechLink Corp"
+                        value={userData.co}
+                        onChange={e => setUserData({ ...userData, co: e.target.value })}
+                        className="w-full bg-slate-50 border-1.5 border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                    Email <span className="text-accent-secondary">*</span>
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input 
-                      type="email" 
-                      placeholder="ten@congty.com"
-                      value={userData.email}
-                      onChange={e => setUserData({ ...userData, email: e.target.value })}
-                      className={`w-full bg-slate-50 border-1.5 ${errors.email ? 'border-danger bg-danger/5' : 'border-slate-200'} rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm`}
-                    />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      Số điện thoại <span className="text-accent-secondary">*</span>
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="tel" 
+                        placeholder="0901 234 567"
+                        value={userData.phone}
+                        onChange={e => setUserData({ ...userData, phone: e.target.value })}
+                        className={`w-full bg-slate-50 border-1.5 ${errors.phone ? 'border-danger bg-danger/5' : 'border-slate-200'} rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm`}
+                      />
+                    </div>
+                    {errors.phone && <span className="text-[11px] text-red-500 flex items-center gap-1 font-medium"><AlertCircle className="w-3 h-3" /> {errors.phone}</span>}
                   </div>
-                  {errors.email && <span className="text-[11px] text-red-500 flex items-center gap-1 font-medium"><AlertCircle className="w-3 h-3" /> {errors.email}</span>}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      Email <span className="text-accent-secondary">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="email" 
+                        placeholder="ten@congty.com"
+                        value={userData.email}
+                        onChange={e => setUserData({ ...userData, email: e.target.value })}
+                        className={`w-full bg-slate-50 border-1.5 ${errors.email ? 'border-danger bg-danger/5' : 'border-slate-200'} rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none transition-all focus:border-accent focus:bg-white focus:shadow-sm`}
+                      />
+                    </div>
+                    {errors.email && <span className="text-[11px] text-red-500 flex items-center gap-1 font-medium"><AlertCircle className="w-3 h-3" /> {errors.email}</span>}
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-start gap-4 bg-success/10 border border-success/20 rounded-2xl p-4 mb-6">
                 <Lock className="w-5 h-5 text-success shrink-0 mt-0.5" />
                 <p className="text-xs text-emerald-800 leading-relaxed">
-                  <strong className="text-emerald-900">Cam kết bảo mật:</strong> Thông tin của bạn được mã hóa chuẩn SSL 256-bit. Chúng tôi tuyệt đối không chia sẻ dữ liệu với bên thứ ba.
+                  <strong className="text-emerald-950">Cam kết bảo mật:</strong> Thông tin của bạn được mã hóa chuẩn SSL 256-bit. Chúng tôi tuyệt đối không chia sẻ dữ liệu với bên thứ ba.
                 </p>
               </div>
 
-              {submitError && (
-                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
-                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                  <div className="flex flex-col gap-1">
-                    <p className="text-xs font-bold text-red-900">Lỗi gửi dữ liệu</p>
-                    <p className="text-[11px] text-red-700 leading-relaxed">{submitError}</p>
-                  </div>
-                </div>
-              )}
-
-              <button 
-                onClick={handleProceed}
-                disabled={isSubmitting}
-                className="w-full py-4.5 text-base font-bold rounded-xl bg-gradient-accent text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <RefreshCcw className="w-5 h-5 animate-spin" /> Đang xử lý...
-                  </>
-                ) : (
-                  <>Xem kết quả đánh giá AI →</>
-                )}
-              </button>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setStep('start')}
+                  className="flex-1 py-4.5 text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Quay lại
+                </button>
+                <button 
+                  onClick={handleProceedToQuiz}
+                  className="flex-[2] py-4.5 text-base font-bold rounded-xl bg-gradient-accent text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  Tiếp tục sang phần khảo sát →
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -512,7 +565,7 @@ export default function App() {
               >
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-accent-secondary uppercase tracking-widest">Bước 1 / 2 — Khảo sát</span>
+                    <span className="text-[10px] font-bold text-accent-secondary uppercase tracking-widest">Bước 2 / 2 — Khảo sát</span>
                     <span className="text-xs font-semibold text-slate-600">Tiến độ hoàn thành</span>
                   </div>
                   <span className="text-xs font-bold text-accent font-display bg-accent/10 px-3 py-1 rounded-full">
@@ -581,16 +634,40 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="flex justify-center pt-8 pb-12">
+              {submitError && (
+                <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
+                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-bold text-red-900">Lỗi gửi dữ liệu</p>
+                    <p className="text-[11px] text-red-700 leading-relaxed">{submitError}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 pb-12 max-w-[500px] mx-auto">
                 <button 
-                  disabled={Object.keys(answers).length < QUESTIONS.length}
                   onClick={() => setStep('contact')}
-                  className="w-full max-w-[400px] py-5 rounded-2xl text-lg font-bold transition-all flex items-center justify-center gap-3 bg-gradient-success text-white shadow-xl hover:-translate-y-1 hover:shadow-2xl disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+                  className="flex-1 py-4.5 text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <CheckCircle2 className="w-6 h-6" /> 
-                  {Object.keys(answers).length < QUESTIONS.length 
-                    ? `Hoàn thành ${QUESTIONS.length - Object.keys(answers).length} câu còn lại` 
-                    : 'Tiếp tục để nhận kết quả'}
+                  <ChevronLeft className="w-4 h-4" /> Sửa thông tin
+                </button>
+                <button 
+                  disabled={Object.keys(answers).length < QUESTIONS.length || isSubmitting}
+                  onClick={handleProceedSubmit}
+                  className="flex-[2] py-4.5 rounded-xl text-base font-bold transition-all flex items-center justify-center gap-3 bg-gradient-success text-white shadow-xl hover:-translate-y-1 hover:shadow-2xl disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCcw className="w-5 h-5 animate-spin" /> Đang gửi...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-6 h-6" /> 
+                      {Object.keys(answers).length < QUESTIONS.length 
+                        ? `Hoàn thành ${QUESTIONS.length - Object.keys(answers).length} câu còn lại` 
+                        : 'Xem kết quả đánh giá AI →'}
+                    </>
+                  )}
                 </button>
               </div>
             </div>
