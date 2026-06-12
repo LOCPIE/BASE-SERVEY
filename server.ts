@@ -50,7 +50,6 @@ async function startServer() {
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
             answers: survey_type ? { ...answers, survey_type } : answers,
-            survey_type: survey_type || null,
             created_at: new Date().toISOString()
           }
         ])

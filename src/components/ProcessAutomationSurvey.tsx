@@ -302,10 +302,71 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const dbPromise = supabase
-        .from('quiz_submissions')
-        .insert([
-          {
+      // 1. Try to submit via the API server endpoint first
+      const apiResponse = await fetch('/api/submit-quiz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userData,
+          answers,
+          totalScore,
+          percentageScore,
+          dimensionScores,
+          survey_type: 'process_automation',
+        }),
+      });
+
+      if (apiResponse.ok) {
+        const resData = await apiResponse.json();
+        if (resData.success) {
+          console.log('Submission successful via API server:', resData);
+          setStep('result');
+          return;
+        }
+      }
+      
+      throw new Error(`API server returned non-success response`);
+    } catch (apiError: any) {
+      console.warn('API submission failed, trying direct client-side Supabase insert:', apiError);
+      
+      // 2. Client-side fallback if backend API is not available or failed
+      try {
+        const dbPromise = supabase
+          .from('quiz_submissions')
+          .insert([
+            {
+              name: userData.name,
+              phone: userData.phone,
+              email: userData.email,
+              company: userData.co,
+              total_score: totalScore,
+              percentage_score: percentageScore,
+              dimension_scores: dimensionScores,
+              answers: { ...answers, survey_type: 'process_automation' },
+              created_at: new Date().toISOString()
+            }
+          ]);
+
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Network timeout')), 4000)
+        );
+
+        const { error: supabaseError } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+        if (supabaseError) {
+          throw new Error(`Supabase Error: ${supabaseError.message}`);
+        }
+
+        console.log('Submission successful via direct client-side');
+        setStep('result');
+      } catch (clientError: any) {
+        console.warn('Direct client-side Supabase insert also failed, caching locally:', clientError);
+        // 3. Local Cache fallback
+        try {
+          const backup = JSON.parse(localStorage.getItem('quiz_submissions_backup') || '[]');
+          backup.push({
             name: userData.name,
             phone: userData.phone,
             email: userData.email,
@@ -314,46 +375,14 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
             answers: { ...answers, survey_type: 'process_automation' },
-            survey_type: 'process_automation',
             created_at: new Date().toISOString()
-          }
-        ]);
-
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Network timeout')), 2000)
-      );
-
-      const { error: supabaseError } = await Promise.race([dbPromise, timeoutPromise]) as any;
-
-      if (supabaseError) {
-        throw new Error(`Supabase Error: ${supabaseError.message}`);
+          });
+          localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
+        } catch (e) {
+          console.error('Failed to save fallback submission:', e);
+        }
+        setStep('result');
       }
-
-      console.log('Submission successful');
-      setStep('result');
-    } catch (error: any) {
-      console.warn('Failed to submit automation survey to Supabase, falling back to local cache:', error);
-      
-      try {
-        const backup = JSON.parse(localStorage.getItem('quiz_submissions_backup') || '[]');
-        backup.push({
-          name: userData.name,
-          phone: userData.phone,
-          email: userData.email,
-          company: userData.co,
-          total_score: totalScore,
-          percentage_score: percentageScore,
-          dimension_scores: dimensionScores,
-          answers: { ...answers, survey_type: 'process_automation' },
-          survey_type: 'process_automation',
-          created_at: new Date().toISOString()
-        });
-        localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
-      } catch (e) {
-        console.error('Failed to save fallback submission:', e);
-      }
-
-      setStep('result');
     } finally {
       setIsSubmitting(false);
     }
