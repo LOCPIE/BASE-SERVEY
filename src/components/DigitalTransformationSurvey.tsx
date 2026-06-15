@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../supabaseClient';
+import { getUtmSource } from '../utils/utm';
 import { 
   Clock, 
   ClipboardList, 
@@ -713,6 +714,7 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
   const handleProceedSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
+    const utmSourceValue = getUtmSource();
     try {
       // 1. Try to submit via the API server endpoint first
       const apiResponse = await fetch('/api/submit-quiz', {
@@ -727,6 +729,7 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
           percentageScore,
           dimensionScores,
           survey_type: 'digital_transformation',
+          utm_source: utmSourceValue,
         }),
       });
 
@@ -757,6 +760,8 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
               percentage_score: percentageScore,
               dimension_scores: dimensionScores,
               answers: { ...answers, _custom_inputs: inputs, survey_type: 'digital_transformation' },
+              survey_type: 'digital_transformation',
+              utm_source: utmSourceValue,
               created_at: new Date().toISOString()
             }
           ]);
@@ -787,6 +792,8 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
             answers: { ...answers, _custom_inputs: inputs, survey_type: 'digital_transformation' },
+            survey_type: 'digital_transformation',
+            utm_source: utmSourceValue,
             created_at: new Date().toISOString()
           });
           localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));

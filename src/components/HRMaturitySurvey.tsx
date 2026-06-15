@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../supabaseClient';
+import { getUtmSource } from '../utils/utm';
 import { 
   Clock, 
   ClipboardList, 
@@ -288,6 +289,7 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
   const handleProceedSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
+    const utmSourceValue = getUtmSource();
     try {
       // 1. Try to submit via the API server endpoint first
       const apiResponse = await fetch('/api/submit-quiz', {
@@ -302,6 +304,7 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
           percentageScore,
           dimensionScores,
           survey_type: 'hr_maturity',
+          utm_source: utmSourceValue,
         }),
       });
 
@@ -332,6 +335,8 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
               percentage_score: percentageScore,
               dimension_scores: dimensionScores,
               answers: { ...answers, survey_type: 'hr_maturity' },
+              survey_type: 'hr_maturity',
+              utm_source: utmSourceValue,
               created_at: new Date().toISOString()
             }
           ]);
@@ -362,6 +367,8 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
             answers: { ...answers, survey_type: 'hr_maturity' },
+            survey_type: 'hr_maturity',
+            utm_source: utmSourceValue,
             created_at: new Date().toISOString()
           });
           localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));

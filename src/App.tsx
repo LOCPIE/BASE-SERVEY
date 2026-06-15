@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './supabaseClient';
+import { getUtmSource } from './utils/utm';
 import Home from './components/Home';
 import DigitalTransformationSurvey from './components/DigitalTransformationSurvey';
 import HRMaturitySurvey from './components/HRMaturitySurvey';
@@ -242,6 +243,7 @@ export default function App() {
   const handleProceedSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
+    const utmSourceValue = getUtmSource();
     try {
       // 1. Try to submit via the API server endpoint first
       const apiResponse = await fetch('/api/submit-quiz', {
@@ -256,6 +258,7 @@ export default function App() {
           percentageScore,
           dimensionScores,
           survey_type: 'ai_transformation',
+          utm_source: utmSourceValue,
         }),
       });
 
@@ -286,6 +289,8 @@ export default function App() {
               percentage_score: percentageScore,
               dimension_scores: dimensionScores,
               answers: { ...answers, survey_type: 'ai_transformation' },
+              survey_type: 'ai_transformation',
+              utm_source: utmSourceValue,
               created_at: new Date().toISOString()
             }
           ]);
@@ -316,6 +321,8 @@ export default function App() {
             percentage_score: percentageScore,
             dimension_scores: dimensionScores,
             answers: { ...answers, survey_type: 'ai_transformation' },
+            survey_type: 'ai_transformation',
+            utm_source: utmSourceValue,
             created_at: new Date().toISOString()
           });
           localStorage.setItem('quiz_submissions_backup', JSON.stringify(backup));
