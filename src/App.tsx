@@ -84,26 +84,21 @@ const DIMENSIONS: Record<string, Dimension> = {
 // --- Components ---
 
 export default function App() {
-  const [route, setRoute] = useState(() => {
-    const path = window.location.pathname;
+  const getRouteFromUrl = () => {
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
     const hash = window.location.hash;
-    if (hash === '#tool' || path === '/tool') return '/tool';
-    if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
-    if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') return '/khao-sat-chuyen-doi-ai';
-    if (hash === '#chi-so-quan-tri-nhan-su' || path === '/chi-so-quan-tri-nhan-su') return '/chi-so-quan-tri-nhan-su';
-    if (hash === '#chi-so-tu-dong-hoa-quy-trinh' || path === '/chi-so-tu-dong-hoa-quy-trinh') return '/chi-so-tu-dong-hoa-quy-trinh';
+    if (hash === '#tool' || hash === '#/tool' || path === '/tool') return '/tool';
+    if (hash === '#khao-sat-chuyen-doi-so' || hash === '#/khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
+    if (hash === '#khao-sat-chuyen-doi-ai' || hash === '#/khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') return '/khao-sat-chuyen-doi-ai';
+    if (hash === '#chi-so-quan-tri-nhan-su' || hash === '#/chi-so-quan-tri-nhan-su' || path === '/chi-so-quan-tri-nhan-su') return '/chi-so-quan-tri-nhan-su';
+    if (hash === '#chi-so-tu-dong-hoa-quy-trinh' || hash === '#/chi-so-tu-dong-hoa-quy-trinh' || path === '/chi-so-tu-dong-hoa-quy-trinh') return '/chi-so-tu-dong-hoa-quy-trinh';
     return '/';
-  });
+  };
+
+  const [route, setRoute] = useState(getRouteFromUrl);
 
   const navigate = (to: string) => {
-    let target = to;
-    if (to === '/tool') target = '/tool';
-    else if (to === '/khao-sat-chuyen-doi-so') target = '/#khao-sat-chuyen-doi-so';
-    else if (to === '/khao-sat-chuyen-doi-ai') target = '/#khao-sat-chuyen-doi-ai';
-    else if (to === '/chi-so-quan-tri-nhan-su') target = '/#chi-so-quan-tri-nhan-su';
-    else if (to === '/chi-so-tu-dong-hoa-quy-trinh') target = '/#chi-so-tu-dong-hoa-quy-trinh';
-    
-    window.history.pushState({}, '', target);
+    window.history.pushState({}, '', to);
     setRoute(to);
     window.scrollTo(0, 0);
     if (to === '/') {
@@ -117,20 +112,9 @@ export default function App() {
 
   useEffect(() => {
     const handlePopState = () => {
-      const path = window.location.pathname;
-      const hash = window.location.hash;
-      if (hash === '#tool' || path === '/tool') {
-        setRoute('/tool');
-      } else if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') {
-        setRoute('/khao-sat-chuyen-doi-so');
-      } else if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') {
-        setRoute('/khao-sat-chuyen-doi-ai');
-      } else if (hash === '#chi-so-quan-tri-nhan-su' || path === '/chi-so-quan-tri-nhan-su') {
-        setRoute('/chi-so-quan-tri-nhan-su');
-      } else if (hash === '#chi-so-tu-dong-hoa-quy-trinh' || path === '/chi-so-tu-dong-hoa-quy-trinh') {
-        setRoute('/chi-so-tu-dong-hoa-quy-trinh');
-      } else {
-        setRoute('/');
+      const activeRoute = getRouteFromUrl();
+      setRoute(activeRoute);
+      if (activeRoute === '/') {
         setStep('start');
         setUserData({ name: '', phone: '', email: '', co: '' });
         setAnswers({});
