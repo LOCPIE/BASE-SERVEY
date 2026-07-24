@@ -231,7 +231,7 @@ export default function Home({ onNavigate }: HomeProps) {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-6"
             >
-              Nền tảng Toàn diện Cho <br className="hidden sm:inline" />
+              Nền tảng hỗ trợ <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-sky-300 to-amber-300">
                 Chuyển đổi số & Ứng dụng AI
               </span> Doanh nghiệp
