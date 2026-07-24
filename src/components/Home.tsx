@@ -244,7 +244,7 @@ export default function Home({ onNavigate }: HomeProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-base sm:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto mb-8 font-normal"
             >
-              Đo lường mức độ trưởng thành số, sử dụng bộ công cụ quản trị miễn phí (Free Tools), và khai thác kho prompt AI chuẩn hóa dành riêng cho CEO & Nhà quản trị.
+              Đo lường mức độ trưởng thành số, bộ công cụ quản trị miễn phí, và khai thác kho prompt AI chuẩn hóa dành riêng cho CEO & Nhà quản trị.
             </motion.p>
 
             {/* Action Buttons */}
