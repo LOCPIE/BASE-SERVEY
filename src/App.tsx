@@ -136,6 +136,14 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (route === '/prompt-library' || route === '/tool-prompt') {
+      document.title = "Prompt Library - Thư viện Prompt cho doanh nghiệp";
+    } else {
+      document.title = "Base.vn - Nền tảng Chuyển đổi số & Quản trị Doanh nghiệp";
+    }
+  }, [route]);
+
   const [step, setStep] = useState<'start' | 'contact' | 'quiz' | 'result' | 'success'>('start');
   const [userData, setUserData] = useState<UserData>({ name: '', phone: '', email: '', co: '' });
   const [errors, setErrors] = useState<Partial<Record<keyof UserData, string>>>({});

@@ -518,6 +518,11 @@ export default function PromptLibrary({ onNavigate }: PromptLibraryProps) {
 
   const [visibleCount, setVisibleCount] = useState<number>(15);
 
+  // Set document title
+  useEffect(() => {
+    document.title = "Prompt Library - Thư viện Prompt cho doanh nghiệp";
+  }, []);
+
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(15);
