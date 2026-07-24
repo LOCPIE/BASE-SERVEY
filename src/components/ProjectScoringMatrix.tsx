@@ -2,18 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { 
   FileSpreadsheet, 
   ArrowLeft, 
-  Copy, 
-  Check, 
   Plus, 
   Trash2, 
-  RotateCcw, 
   Info, 
   CheckCircle2, 
   AlertTriangle, 
   XCircle, 
   Sparkles,
-  ChevronRight,
-  Share2
+  ChevronRight
 } from 'lucide-react';
 
 interface ProjectScoringMatrixProps {
@@ -110,7 +106,6 @@ const PROJECT_COLOR_THEMES = [
 export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatrixProps) {
   const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
   const [criteria, setCriteria] = useState<Criterion[]>(DEFAULT_CRITERIA);
-  const [copied, setCopied] = useState(false);
 
   // Get color theme for project at index
   const getTheme = (index: number) => PROJECT_COLOR_THEMES[index % PROJECT_COLOR_THEMES.length];
@@ -255,34 +250,6 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
     setProjects(projects.map((p) => (p.id === projId ? { ...p, name: newName } : p)));
   };
 
-  const handleResetDefaults = () => {
-    setProjects(DEFAULT_PROJECTS);
-    setCriteria(DEFAULT_CRITERIA);
-  };
-
-  const handleCopyReport = () => {
-    let reportText = `=== BÁO CÁO ĐÁNH GIÁ VÀ XẾP HẠNG DỰ ÁN (WEIGHTED SCORING MATRIX) ===\n\n`;
-
-    projects.forEach((p, idx) => {
-      const score = summary.scores[p.id] || 0;
-      reportText += `${idx + 1}. Dự án ${p.code}: ${p.name}\n`;
-      reportText += `   - Điểm số có trọng số: ${score} / 5.0\n`;
-      reportText += `   - Đánh giá: ${getConclusion(score).label}\n\n`;
-    });
-
-    reportText += `Chi tiết các tiêu chí đánh giá:\n`;
-    criteria.forEach((c) => {
-      const projectScoresStr = projects.map((p) => `${p.code}=${c.scores[p.id]?.score || 0}/5`).join(', ');
-      reportText += `- ${c.name} (Trọng số ${c.weight}%): ${projectScoresStr}\n`;
-    });
-
-    reportText += `\nBáo cáo được khởi tạo từ Công cụ Quản trị Base.vn.`;
-
-    navigator.clipboard.writeText(reportText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       {/* Top Accent Line */}
@@ -358,48 +325,17 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
                 <ArrowLeft className="w-4 h-4" />
                 Về danh mục Tool
               </button>
-              <button
-                onClick={handleResetDefaults}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 transition-colors cursor-pointer"
-                title="Khôi phục mẫu gốc"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Mẫu chuẩn
-              </button>
-              <button
-                onClick={handleCopyReport}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-sm cursor-pointer"
-              >
-                {copied ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
-                {copied ? 'Đã sao chép Báo cáo!' : 'Sao chép Báo cáo'}
-              </button>
             </div>
           </div>
 
           {/* Quick Notice Banner */}
-          <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-4 text-xs">
             <div className="flex items-start gap-2.5 text-slate-700 leading-relaxed">
               <Info className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
               <div>
                 <strong>Quy tắc vận hành:</strong> Nhập điểm số từ <strong>1 (Rất thấp)</strong> đến <strong>5 (Rất cao)</strong> cho từng tiêu chí. 
                 Thêm/Xóa dự án linh hoạt và điểm số tổng hợp được tự động tính toán theo trọng số <code className="bg-emerald-100 text-emerald-900 px-1 py-0.5 rounded font-mono font-bold">Score = Σ(Weight% × Grade)</code>.
               </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                onClick={handleAddProject}
-                className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors flex-shrink-0 cursor-pointer shadow-sm"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Thêm dự án
-              </button>
-              <button
-                onClick={handleAddCriterion}
-                className="inline-flex items-center gap-1.5 bg-white border border-emerald-300 text-emerald-800 font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-emerald-100 transition-colors flex-shrink-0 cursor-pointer shadow-sm"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Thêm tiêu chí
-              </button>
             </div>
           </div>
         </div>
@@ -646,16 +582,6 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
               <Plus className="w-4 h-4 text-emerald-600" />
               Thêm tiêu chí thẩm định mới
             </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCopyReport}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition-colors cursor-pointer shadow-sm"
-              >
-                <Share2 className="w-4 h-4 text-indigo-600" />
-                Chia sẻ / Export Báo cáo
-              </button>
-            </div>
           </div>
         </div>
 
