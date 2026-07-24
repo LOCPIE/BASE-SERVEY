@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import Header from './Header';
 import { 
   FileSpreadsheet, 
   ArrowLeft, 
@@ -256,38 +257,7 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
       <div className="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-500 w-full" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('/')}>
-            <div className="bg-white px-3 py-2 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
-              <img 
-                src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
-                alt="Base.vn" 
-                className="h-6 object-contain"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-700 hover:text-emerald-600 transition-colors bg-transparent border-none">Trang chủ</button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors bg-transparent border-none">Đánh giá doanh nghiệp</button>
-            <button onClick={() => onNavigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors bg-transparent border-none flex items-center gap-1.5">
-              Tool
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
-            </button>
-            <button onClick={() => window.open('https://base.vn/blog/', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors bg-transparent border-none">Tin tức</button>
-            <button onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-contact', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors bg-transparent border-none">Liên hệ</button>
-          </nav>
-
-          <button 
-            onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey', '_blank', 'noopener,noreferrer')}
-            className="hidden sm:inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all shadow-sm cursor-pointer"
-          >
-            Tư vấn 1-1 với Chuyên gia Base
-          </button>
-        </div>
-      </header>
+      <Header onNavigate={onNavigate} activeRoute="/tool" />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">

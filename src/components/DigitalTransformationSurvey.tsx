@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import Header from './Header';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../supabaseClient';
 import { getUtmSource } from '../utils/utm';
@@ -875,38 +876,7 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
       <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 z-50 shadow-[0_0_15px_rgba(79,70,229,0.2)]" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          <div className="flex items-center cursor-pointer" onClick={() => onNavigate('/')}>
-            <div className="bg-white px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
-              <img 
-                src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
-                alt="Base.vn" 
-                className="h-6 object-contain"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Đánh giá doanh nghiệp</button>
-            <button onClick={() => onNavigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
-              Tool
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
-            </button>
-            <button onClick={() => window.open('https://base.vn/blog/', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Tin tức</button>
-            <button onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-contact', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Liên hệ</button>
-          </nav>
-
-          <button 
-            onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey', '_blank', 'noopener,noreferrer')}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:shadow-md flex items-center gap-1.5 cursor-pointer"
-          >
-            Đăng Ký Demo <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
+      <Header onNavigate={onNavigate} />
 
       {/* Decorative background blobs */}
       <div className="fixed -top-[200px] -right-[150px] w-[600px] h-[600px] rounded-full bg-indigo-500/8 blur-[100px] animate-float pointer-events-none mix-blend-multiply opacity-50" />

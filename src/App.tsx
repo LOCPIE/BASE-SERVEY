@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import Header from './components/Header';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './supabaseClient';
 import { getUtmSource } from './utils/utm';
@@ -8,6 +9,7 @@ import HRMaturitySurvey from './components/HRMaturitySurvey';
 import ProcessAutomationSurvey from './components/ProcessAutomationSurvey';
 import BusinessTools from './components/BusinessTools';
 import ProjectScoringMatrix from './components/ProjectScoringMatrix';
+import PromptLibrary from './components/PromptLibrary';
 import { 
   Bot, 
   Clock, 
@@ -89,6 +91,7 @@ export default function App() {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
     const hash = window.location.hash;
     if (path === '/tool/danh-gia-va-xep-hang-du-an' || hash === '#/tool/danh-gia-va-xep-hang-du-an' || hash === '#tool/danh-gia-va-xep-hang-du-an') return '/tool/danh-gia-va-xep-hang-du-an';
+    if (hash === '#prompt-library' || hash === '#/prompt-library' || path === '/prompt-library' || hash === '#tool-prompt' || hash === '#/tool-prompt' || path === '/tool-prompt') return '/prompt-library';
     if (hash === '#tool' || hash === '#/tool' || path === '/tool') return '/tool';
     if (hash === '#khao-sat-chuyen-doi-so' || hash === '#/khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
     if (hash === '#khao-sat-chuyen-doi-ai' || hash === '#/khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') return '/khao-sat-chuyen-doi-ai';
@@ -491,6 +494,10 @@ export default function App() {
     return <BusinessTools onNavigate={navigate} />;
   }
 
+  if (route === '/prompt-library' || route === '/tool-prompt') {
+    return <PromptLibrary onNavigate={navigate} />;
+  }
+
   if (route === '/tool/danh-gia-va-xep-hang-du-an') {
     return <ProjectScoringMatrix onNavigate={navigate} />;
   }
@@ -513,38 +520,7 @@ export default function App() {
       <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-accent-secondary to-success z-50 shadow-[0_0_15px_rgba(139,92,246,0.2)]" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
-          <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
-            <div className="bg-white px-3.5 py-2.5 rounded-xl flex items-center justify-center shadow-sm border border-slate-100">
-              <img 
-                src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
-                alt="Base.vn" 
-                className="h-6 object-contain"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <button onClick={() => navigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
-            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Đánh giá doanh nghiệp</button>
-            <button onClick={() => navigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
-              Tool
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
-            </button>
-            <button onClick={() => window.open('https://base.vn/blog/', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Tin tức</button>
-            <button onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-contact', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Liên hệ</button>
-          </nav>
-
-          <button 
-            onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey', '_blank', 'noopener,noreferrer')}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:shadow-md flex items-center gap-1.5 cursor-pointer"
-          >
-            Đăng Ký Demo <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
+      <Header onNavigate={navigate} />
 
       {/* Background Blobs */}
       <div className="fixed -top-[200px] -right-[150px] w-[600px] h-[600px] rounded-full bg-accent/10 blur-[100px] animate-float pointer-events-none mix-blend-multiply opacity-40" />
