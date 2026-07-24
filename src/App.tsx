@@ -7,6 +7,7 @@ import DigitalTransformationSurvey from './components/DigitalTransformationSurve
 import HRMaturitySurvey from './components/HRMaturitySurvey';
 import ProcessAutomationSurvey from './components/ProcessAutomationSurvey';
 import BusinessTools from './components/BusinessTools';
+import ProjectScoringMatrix from './components/ProjectScoringMatrix';
 import { 
   Bot, 
   Clock, 
@@ -87,6 +88,7 @@ export default function App() {
   const getRouteFromUrl = () => {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
     const hash = window.location.hash;
+    if (path === '/tool/danh-gia-va-xep-hang-du-an' || hash === '#/tool/danh-gia-va-xep-hang-du-an' || hash === '#tool/danh-gia-va-xep-hang-du-an') return '/tool/danh-gia-va-xep-hang-du-an';
     if (hash === '#tool' || hash === '#/tool' || path === '/tool') return '/tool';
     if (hash === '#khao-sat-chuyen-doi-so' || hash === '#/khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
     if (hash === '#khao-sat-chuyen-doi-ai' || hash === '#/khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') return '/khao-sat-chuyen-doi-ai';
@@ -489,6 +491,10 @@ export default function App() {
     return <BusinessTools onNavigate={navigate} />;
   }
 
+  if (route === '/tool/danh-gia-va-xep-hang-du-an') {
+    return <ProjectScoringMatrix onNavigate={navigate} />;
+  }
+
   if (route === '/khao-sat-chuyen-doi-so') {
     return <DigitalTransformationSurvey onNavigate={navigate} />;
   }
@@ -522,13 +528,13 @@ export default function App() {
 
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => navigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Đánh giá doanh nghiệp</button>
             <button onClick={() => navigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
               Tool
               <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
             </button>
-            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
-            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
-            <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
+            <button onClick={() => window.open('https://base.vn/blog/', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Tin tức</button>
+            <button onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-contact', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Liên hệ</button>
           </nav>
 
           <button 

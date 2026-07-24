@@ -890,13 +890,13 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
 
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Đánh giá doanh nghiệp</button>
             <button onClick={() => onNavigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
               Tool
               <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
             </button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
+            <button onClick={() => window.open('https://base.vn/blog/', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Tin tức</button>
+            <button onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-contact', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Liên hệ</button>
           </nav>
 
           <button 

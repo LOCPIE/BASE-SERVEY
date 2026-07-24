@@ -27,14 +27,17 @@ import {
   Grid,
   Building2,
   ArrowRight,
-  X
+  X,
+  FileSpreadsheet,
+  Sliders
 } from 'lucide-react';
 
 interface BusinessToolsProps {
   onNavigate: (path: string) => void;
+  initialModal?: 'prompt-hub' | 'raci' | 'turnover' | 'scoring-matrix' | null;
 }
 
-export default function BusinessTools({ onNavigate }: BusinessToolsProps) {
+export default function BusinessTools({ onNavigate, initialModal }: BusinessToolsProps) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   
@@ -44,8 +47,94 @@ export default function BusinessTools({ onNavigate }: BusinessToolsProps) {
   const [manualHoursPerWeek, setManualHoursPerWeek] = useState<number>(8); // hours per employee per week
 
   // Active Tool Modal
-  const [activeModal, setActiveModal] = useState<'prompt-hub' | 'raci' | 'turnover' | null>(null);
+  const [activeModal, setActiveModal] = useState<'prompt-hub' | 'raci' | 'turnover' | 'scoring-matrix' | null>(initialModal || null);
+
+  React.useEffect(() => {
+    if (initialModal) {
+      setActiveModal(initialModal);
+    } else {
+      setActiveModal(null);
+    }
+  }, [initialModal]);
+
   const [copiedPromptIndex, setCopiedPromptIndex] = useState<number | null>(null);
+
+  // Scoring Matrix State
+  const [matrixCriteria, setMatrixCriteria] = useState([
+    {
+      id: 1,
+      name: 'Strategic Fit (Mức độ phù hợp chiến lược)',
+      weight: 30,
+      description: 'Dự án có trực tiếp phục vụ cho mục tiêu trọng tâm năm nay không?',
+      projA: { score: 5, comment: 'Khớp 100% mục tiêu tinh gọn' },
+      projB: { score: 3, comment: 'Kế hoạch mở rộng hơi mạo hiểm' },
+      projC: { score: 2, comment: 'Chưa tập trung vào bài toán cốt lõi' },
+    },
+    {
+      id: 2,
+      name: 'ROI & Business Value (Tỷ suất hoàn vốn & Giá trị)',
+      weight: 25,
+      description: 'Tốc độ hoàn vốn (Payback), khả năng tạo dòng tiền hoặc giảm chi phí rõ ràng.',
+      projA: { score: 4, comment: 'Tiết kiệm ngay 20% chi phí ẩn' },
+      projB: { score: 5, comment: 'Mang lại doanh thu trực tiếp' },
+      projC: { score: 2, comment: 'Rủi ro ROI không rõ ràng' },
+    },
+    {
+      id: 3,
+      name: 'Risk Profile (Mức độ an toàn / Rủi ro thấp)',
+      weight: 15,
+      description: 'Mức độ kiểm soát rủi ro công nghệ, thị trường và vận hành.',
+      projA: { score: 4, comment: 'Rủi ro triển khai rất thấp' },
+      projB: { score: 2, comment: 'Rủi ro chôn vốn & tồn kho' },
+      projC: { score: 1, comment: 'Rủi ro kỹ thuật & lỗ nặng' },
+    },
+    {
+      id: 4,
+      name: 'AI Readiness (Độ sẵn sàng về Data & Công nghệ)',
+      weight: 15,
+      description: 'Dữ liệu đã chuẩn hóa chưa? Quy trình SOP đã sẵn sàng số hóa/ứng dụng AI chưa?',
+      projA: { score: 5, comment: 'SaaS chuẩn hóa, dùng được ngay' },
+      projB: { score: 3, comment: 'Chưa cần ứng dụng AI' },
+      projC: { score: 2, comment: 'Hạ tầng Data chưa sẵn sàng' },
+    },
+    {
+      id: 5,
+      name: 'Resource Capacity (Độ khả thi nguồn lực)',
+      weight: 15,
+      description: 'Doanh nghiệp có đủ nhân sự giỏi và ngân sách thực thi mà không làm gãy BAU không?',
+      projA: { score: 4, comment: 'Tốn ít nhân sự quản trị' },
+      projB: { score: 2, comment: 'Thiếu hụt Quản lý chi nhánh' },
+      projC: { score: 3, comment: 'Tốn ít người nhưng thiếu chuyên môn' },
+    },
+  ]);
+
+  const weightedScores = useMemo(() => {
+    let scoreA = 0;
+    let scoreB = 0;
+    let scoreC = 0;
+    let totalWeight = 0;
+
+    matrixCriteria.forEach(item => {
+      const w = item.weight / 100;
+      totalWeight += item.weight;
+      scoreA += w * item.projA.score;
+      scoreB += w * item.projB.score;
+      scoreC += w * item.projC.score;
+    });
+
+    return {
+      totalWeight,
+      scoreA: Number(scoreA.toFixed(2)),
+      scoreB: Number(scoreB.toFixed(2)),
+      scoreC: Number(scoreC.toFixed(2)),
+    };
+  }, [matrixCriteria]);
+
+  const getConclusion = (score: number) => {
+    if (score >= 4.0) return { label: 'ĐIỀU HÀNH NGAY (ƯU TIÊN 1)', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300' };
+    if (score >= 3.0) return { label: 'HOÃN / XEM XÉT SAU', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' };
+    return { label: 'LOẠI BỎ (REJECT)', badgeClass: 'bg-rose-100 text-rose-800 border-rose-300' };
+  };
 
   // RACI generator state
   const [raciTask, setRaciTask] = useState<string>('Phê duyệt ngân sách dự án mới');
@@ -186,6 +275,16 @@ export default function BusinessTools({ onNavigate }: BusinessToolsProps) {
       badge: 'Phân tích Chi phí',
       actionText: 'Mở công cụ tính',
       onClick: () => setActiveModal('turnover')
+    },
+    {
+      id: 'weighted-scoring-matrix',
+      category: 'templates',
+      title: 'Đánh giá và Xếp hạng dự án',
+      desc: 'Thẩm định & chấm điểm trọng số các dự án chiến lược (Tối ưu vận hành, Mở rộng chi nhánh, R&D AI) dành cho CEO & Ban Kiểm Sát.',
+      icon: <FileSpreadsheet className="w-6 h-6 text-emerald-600" />,
+      badge: 'Dành cho CEO & HĐQT',
+      actionText: 'Mở Ma trận Chấm điểm',
+      onClick: () => onNavigate('/tool/danh-gia-va-xep-hang-du-an')
     }
   ];
 
@@ -223,13 +322,13 @@ export default function BusinessTools({ onNavigate }: BusinessToolsProps) {
 
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer bg-transparent border-none">Đánh giá doanh nghiệp</button>
             <button onClick={() => onNavigate('/tool')} className="text-sm font-bold text-indigo-600 transition-colors flex items-center gap-1.5 cursor-pointer bg-transparent border-none">
               Tool
               <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
             </button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
-            <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
+            <button onClick={() => window.open('https://base.vn/blog/', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer bg-transparent border-none">Tin tức</button>
+            <button onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-contact', '_blank', 'noopener,noreferrer')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer bg-transparent border-none">Liên hệ</button>
           </nav>
 
           <button 
@@ -648,6 +747,255 @@ export default function BusinessTools({ onNavigate }: BusinessToolsProps) {
                 <button onClick={() => setActiveModal(null)} className="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">
                   Đóng
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Weighted Scoring Matrix Modal */}
+      <AnimatePresence>
+        {activeModal === 'scoring-matrix' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-md overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              className="bg-white rounded-2xl max-w-6xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-8 max-h-[90vh] flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="flex items-start justify-between pb-4 border-b border-slate-200 gap-4 flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-100 text-emerald-600">
+                    <FileSpreadsheet className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider mb-1">
+                      Công cụ Quản trị CEO & HĐQT
+                    </div>
+                    <h3 className="font-extrabold text-slate-900 text-lg sm:text-xl">
+                      Đánh giá và Xếp hạng dự án
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Đánh giá, chấm điểm có trọng số & thẩm định ưu tiên phê duyệt các dự án đầu tư chiến lược
+                    </p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    setActiveModal(null);
+                    if (window.location.pathname.includes('/tool/danh-gia-va-xep-hang-du-an')) {
+                      onNavigate('/tool');
+                    }
+                  }} 
+                  className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Info Note & Quick Actions */}
+              <div className="my-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs flex-shrink-0">
+                <div className="text-slate-600 leading-relaxed">
+                  💡 <strong>Hướng dẫn:</strong> Điểm số từ 1 (Rất thấp) đến 5 (Rất cao). Điểm tổng hợp có trọng số được tự động tính toán. Thay đổi điểm số bên dưới để thấy kết luận phê duyệt thay đổi trực tiếp.
+                </div>
+                <button
+                  onClick={() => {
+                    const text = `BẢNG MA TRẬN CHẤM ĐIỂM DỰ ÁN (WEIGHTED SCORING MATRIX)\n` +
+                      `1. Dự án A (Base.vn): ${weightedScores.scoreA}/5 -> ${getConclusion(weightedScores.scoreA).label}\n` +
+                      `2. Dự án B (Mở Chi nhánh mới): ${weightedScores.scoreB}/5 -> ${getConclusion(weightedScores.scoreB).label}\n` +
+                      `3. Dự án C (AI Chatbot R&D): ${weightedScores.scoreC}/5 -> ${getConclusion(weightedScores.scoreC).label}`;
+                    navigator.clipboard.writeText(text);
+                    alert('Đã sao chép kết quả ma trận chấm điểm vào bộ nhớ tạm!');
+                  }}
+                  className="inline-flex items-center gap-1.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold px-3 py-1.5 rounded-lg text-xs cursor-pointer shadow-sm transition-all whitespace-nowrap"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  Sao chép Báo cáo
+                </button>
+              </div>
+
+              {/* Matrix Table */}
+              <div className="overflow-x-auto overflow-y-auto flex-1 border border-slate-200 rounded-xl shadow-inner">
+                <table className="w-full text-left border-collapse min-w-[900px] text-xs">
+                  <thead>
+                    <tr className="bg-slate-900 text-white font-bold">
+                      <th className="p-3 border-b border-slate-800 text-center w-12">STT</th>
+                      <th className="p-3 border-b border-slate-800 min-w-[180px]">Tiêu chí đánh giá (Key Criteria)</th>
+                      <th className="p-3 border-b border-slate-800 text-center w-24">Trọng số (Weight)</th>
+                      <th className="p-3 border-b border-slate-800 min-w-[220px]">Diễn giải tiêu chí cho CEO & Ban Kiểm Sát</th>
+                      <th className="p-3 border-b border-slate-800 bg-emerald-900/90 text-emerald-100 min-w-[220px]">
+                        <div className="font-extrabold text-sm">Dự án A</div>
+                        <div className="text-[11px] font-normal opacity-90">Triển khai Base.vn (Tối ưu vận hành)</div>
+                      </th>
+                      <th className="p-3 border-b border-slate-800 bg-amber-900/90 text-amber-100 min-w-[220px]">
+                        <div className="font-extrabold text-sm">Dự án B</div>
+                        <div className="text-[11px] font-normal opacity-90">Mở Chi nhánh mới (Tăng trưởng)</div>
+                      </th>
+                      <th className="p-3 border-b border-slate-800 bg-rose-900/90 text-rose-100 min-w-[220px]">
+                        <div className="font-extrabold text-sm">Dự án C</div>
+                        <div className="text-[11px] font-normal opacity-90">Thử nghiệm AI Chatbot R&D (Đổi mới)</div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white">
+                    {matrixCriteria.map((item, idx) => (
+                      <tr key={item.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                        <td className="p-3 text-center font-bold text-slate-500">{item.id}</td>
+                        <td className="p-3 font-bold text-slate-800 leading-snug">{item.name}</td>
+                        <td className="p-3 text-center">
+                          <span className="inline-block bg-slate-100 text-slate-800 font-extrabold px-2 py-1 rounded-md border border-slate-200">
+                            {item.weight}%
+                          </span>
+                        </td>
+                        <td className="p-3 text-slate-600 leading-relaxed text-[11px]">{item.description}</td>
+
+                        {/* Project A */}
+                        <td className="p-3 bg-emerald-50/30">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-[11px] font-semibold text-slate-600">Điểm:</span>
+                            <select
+                              value={item.projA.score}
+                              onChange={(e) => {
+                                const newScore = Number(e.target.value);
+                                setMatrixCriteria(prev => prev.map(c => c.id === item.id ? { ...c, projA: { ...c.projA, score: newScore } } : c));
+                              }}
+                              className="bg-white border border-emerald-300 font-bold text-emerald-800 rounded px-2 py-0.5 text-xs focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                            >
+                              {[1, 2, 3, 4, 5].map(s => (
+                                <option key={s} value={s}>{s} / 5</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="text-[11px] text-slate-700 font-medium leading-tight">
+                            {item.projA.comment}
+                          </div>
+                        </td>
+
+                        {/* Project B */}
+                        <td className="p-3 bg-amber-50/30">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-[11px] font-semibold text-slate-600">Điểm:</span>
+                            <select
+                              value={item.projB.score}
+                              onChange={(e) => {
+                                const newScore = Number(e.target.value);
+                                setMatrixCriteria(prev => prev.map(c => c.id === item.id ? { ...c, projB: { ...c.projB, score: newScore } } : c));
+                              }}
+                              className="bg-white border border-amber-300 font-bold text-amber-800 rounded px-2 py-0.5 text-xs focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                            >
+                              {[1, 2, 3, 4, 5].map(s => (
+                                <option key={s} value={s}>{s} / 5</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="text-[11px] text-slate-700 font-medium leading-tight">
+                            {item.projB.comment}
+                          </div>
+                        </td>
+
+                        {/* Project C */}
+                        <td className="p-3 bg-rose-50/30">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-[11px] font-semibold text-slate-600">Điểm:</span>
+                            <select
+                              value={item.projC.score}
+                              onChange={(e) => {
+                                const newScore = Number(e.target.value);
+                                setMatrixCriteria(prev => prev.map(c => c.id === item.id ? { ...c, projC: { ...c.projC, score: newScore } } : c));
+                              }}
+                              className="bg-white border border-rose-300 font-bold text-rose-800 rounded px-2 py-0.5 text-xs focus:ring-2 focus:ring-rose-500 cursor-pointer"
+                            >
+                              {[1, 2, 3, 4, 5].map(s => (
+                                <option key={s} value={s}>{s} / 5</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="text-[11px] text-slate-700 font-medium leading-tight">
+                            {item.projC.comment}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {/* Weight Total Row */}
+                    <tr className="bg-slate-100 font-extrabold border-t-2 border-slate-300 text-slate-900">
+                      <td colSpan={2} className="p-3 uppercase text-right">TỔNG CỘNG TRỌNG SỐ</td>
+                      <td className="p-3 text-center text-emerald-700 text-sm">{weightedScores.totalWeight}%</td>
+                      <td colSpan={4} className="p-3 text-slate-500 font-normal italic">
+                        {weightedScores.totalWeight === 100 ? '✓ Tổng trọng số tiêu chuẩn 100%' : '⚠️ Chú ý: Tổng trọng số chưa bằng 100%'}
+                      </td>
+                    </tr>
+
+                    {/* Weighted Score Row */}
+                    <tr className="bg-slate-900 text-white font-extrabold text-sm">
+                      <td colSpan={4} className="p-3 uppercase text-right tracking-wider">
+                        ĐIỂM TỔNG HỢP CÓ TRỌNG SỐ (WEIGHTED SCORE)
+                      </td>
+                      <td className="p-3 bg-emerald-800 text-emerald-100 text-center font-black text-base border-r border-slate-800">
+                        {weightedScores.scoreA.toFixed(2)} / 5.0
+                      </td>
+                      <td className="p-3 bg-amber-800 text-amber-100 text-center font-black text-base border-r border-slate-800">
+                        {weightedScores.scoreB.toFixed(2)} / 5.0
+                      </td>
+                      <td className="p-3 bg-rose-800 text-rose-100 text-center font-black text-base">
+                        {weightedScores.scoreC.toFixed(2)} / 5.0
+                      </td>
+                    </tr>
+
+                    {/* Conclusion Row */}
+                    <tr className="border-t-2 border-slate-900 font-extrabold text-xs">
+                      <td colSpan={4} className="p-3 uppercase text-right text-slate-900 bg-slate-100">
+                        KẾT LUẬN &amp; PHÂN LOẠI ƯU TIÊN CHO CEO
+                      </td>
+                      <td className="p-3 bg-emerald-50 text-center">
+                        <span className={`inline-block px-2.5 py-1.5 rounded-lg border font-black text-[11px] shadow-sm ${getConclusion(weightedScores.scoreA).badgeClass}`}>
+                          {getConclusion(weightedScores.scoreA).label}
+                        </span>
+                      </td>
+                      <td className="p-3 bg-amber-50 text-center">
+                        <span className={`inline-block px-2.5 py-1.5 rounded-lg border font-black text-[11px] shadow-sm ${getConclusion(weightedScores.scoreB).badgeClass}`}>
+                          {getConclusion(weightedScores.scoreB).label}
+                        </span>
+                      </td>
+                      <td className="p-3 bg-rose-50 text-center">
+                        <span className={`inline-block px-2.5 py-1.5 rounded-lg border font-black text-[11px] shadow-sm ${getConclusion(weightedScores.scoreC).badgeClass}`}>
+                          {getConclusion(weightedScores.scoreC).label}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="mt-4 pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
+                <div className="text-[11px] text-slate-500">
+                  📌 Mô hình Ma trận chấm điểm có trọng số giúp loại bỏ tính cảm tính, giúp CEO & HĐQT đưa ra quyết định dựa trên dữ liệu chuẩn mực.
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => {
+                      setActiveModal(null);
+                      onNavigate('/khao-sat-chuyen-doi-so');
+                    }}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl cursor-pointer transition-colors shadow-sm"
+                  >
+                    Bắt đầu Khảo sát Doanh nghiệp
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setActiveModal(null);
+                      if (window.location.pathname.includes('/tool/danh-gia-va-xep-hang-du-an')) {
+                        onNavigate('/tool');
+                      }
+                    }} 
+                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl cursor-pointer transition-colors"
+                  >
+                    Đóng
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
