@@ -398,9 +398,9 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
               <thead>
                 <tr className="bg-slate-900 text-white font-bold">
                   <th className="p-3.5 border-b border-slate-800 text-center w-12">STT</th>
-                  <th className="p-3.5 border-b border-slate-800 min-w-[200px]">Tiêu chí đánh giá (Key Criteria)</th>
+                  <th className="p-3.5 border-b border-slate-800 min-w-[260px]">Tiêu chí đánh giá (Key Criteria)</th>
                   <th className="p-3.5 border-b border-slate-800 text-center w-28">Trọng số (%)</th>
-                  <th className="p-3.5 border-b border-slate-800 min-w-[220px]">Diễn giải tiêu chí</th>
+                  <th className="p-3.5 border-b border-slate-800 min-w-[300px]">Diễn giải tiêu chí</th>
                   
                   {/* Dynamic Project Headers */}
                   {projects.map((p, idx) => {
@@ -434,11 +434,11 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
                     
                     {/* Name */}
                     <td className="p-3">
-                      <input
-                        type="text"
+                      <textarea
+                        rows={Math.max(2, Math.ceil((item.name || '').length / 28))}
                         value={item.name}
                         onChange={(e) => handleUpdateCriterion(item.id, 'name', e.target.value)}
-                        className="w-full bg-transparent font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500 rounded px-1.5 py-1 text-xs border border-transparent hover:border-slate-300 transition-colors"
+                        className="w-full bg-transparent font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500 rounded px-1.5 py-1 text-xs border border-transparent hover:border-slate-300 transition-colors leading-relaxed resize-y min-h-[48px]"
                       />
                     </td>
 
@@ -460,10 +460,10 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
                     {/* Description */}
                     <td className="p-3">
                       <textarea
-                        rows={2}
+                        rows={Math.max(2, Math.ceil((item.description || '').length / 32))}
                         value={item.description}
                         onChange={(e) => handleUpdateCriterion(item.id, 'description', e.target.value)}
-                        className="w-full bg-transparent text-slate-600 focus:bg-white focus:ring-1 focus:ring-emerald-500 rounded p-1 text-[11px] border border-transparent hover:border-slate-300 transition-colors leading-snug resize-none"
+                        className="w-full bg-transparent text-slate-600 focus:bg-white focus:ring-1 focus:ring-emerald-500 rounded p-1 text-[11px] border border-transparent hover:border-slate-300 transition-colors leading-relaxed resize-y min-h-[48px]"
                       />
                     </td>
 
@@ -473,8 +473,8 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
                       const projScoreObj = item.scores[p.id] || { score: 3, comment: '' };
 
                       return (
-                        <td key={p.id} className={`p-3 ${theme.cell}`}>
-                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <td key={p.id} className={`p-3 text-center ${theme.cell}`}>
+                          <div className="flex items-center justify-center gap-2">
                             <span className={`text-[11px] font-bold ${theme.text}`}>Điểm:</span>
                             <select
                               value={projScoreObj.score}
@@ -486,13 +486,6 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
                               ))}
                             </select>
                           </div>
-                          <input
-                            type="text"
-                            placeholder="Ghi chú thẩm định..."
-                            value={projScoreObj.comment}
-                            onChange={(e) => handleUpdateScore(item.id, p.id, 'comment', e.target.value)}
-                            className={`w-full bg-white/80 border rounded px-2 py-1 text-[11px] text-slate-700 focus:bg-white focus:ring-1 ${theme.focusRing}`}
-                          />
                         </td>
                       );
                     })}
