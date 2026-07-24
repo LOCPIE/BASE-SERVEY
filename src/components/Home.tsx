@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Header from './Header';
+import Footer from './Footer';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Bot, 
@@ -40,30 +41,6 @@ interface HomeProps {
 export default function Home({ onNavigate }: HomeProps) {
   const [showMockReport, setShowMockReport] = useState(false);
   const [copiedPromptId, setCopiedPromptId] = useState<string | null>(null);
-
-  // Interactive Mini ROI Calculator State
-  const [employees, setEmployees] = useState<number>(30);
-  const [avgSalary, setAvgSalary] = useState<number>(15); // Million VND / month
-  const [manualHoursPerWeek, setManualHoursPerWeek] = useState<number>(10); // Hours/week/employee
-
-  // ROI Calculations
-  const hourlyRate = (avgSalary * 1000000) / 160; // 160 work hours per month
-  const yearlyManualHoursTotal = employees * manualHoursPerWeek * 52;
-  const yearlyManualCostTotal = yearlyManualHoursTotal * hourlyRate;
-  
-  // Assuming 50% efficiency gain with AI & Automation
-  const yearlySavedHours = Math.round(yearlyManualHoursTotal * 0.5);
-  const yearlySavedMoney = Math.round(yearlyManualCostTotal * 0.5);
-
-  const formatVND = (num: number) => {
-    if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(1) + ' Tỷ VNĐ';
-    }
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(0) + ' Triệu VNĐ';
-    }
-    return num.toLocaleString('vi-VN') + ' VNĐ';
-  };
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -124,8 +101,8 @@ export default function Home({ onNavigate }: HomeProps) {
       desc: "Mô phỏng ngân sách & số giờ tiết kiệm được khi tự động hóa các quy trình lập lại thủ công trong doanh nghiệp.",
       icon: <Calculator className="w-6 h-6 text-emerald-600" />,
       tag: "Tài chính & Vận hành",
-      actionText: "Thử tính ngay bên dưới",
-      scrollTarget: "roi-calculator-widget"
+      actionText: "Mở máy tính ROI",
+      route: "/tool"
     },
     {
       id: "raci",
@@ -333,24 +310,24 @@ export default function Home({ onNavigate }: HomeProps) {
       {/* SECTION 1: Featured Enterprise Assessments */}
       <section id="featured-assessments" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-md mb-3">
-                <Layers className="w-3.5 h-3.5" /> 1. Khảo sát & Đo lường Sức mạnh Số
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                Các bộ chỉ số đánh giá doanh nghiệp
-              </h2>
-              <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl">
-                Hoàn thành khảo sát trắc nghiệm trong 5-10 phút để nhận ngay điểm số trực quan và báo cáo chiến lược từ chuyên gia.
-              </p>
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3.5 py-1 rounded-md mb-3">
+              <Layers className="w-3.5 h-3.5" /> Khảo sát & Đo lường Sức mạnh Số
             </div>
-            <button 
-              onClick={() => setShowMockReport(true)}
-              className="mt-4 md:mt-0 text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
-            >
-              <FileText className="w-4 h-4" /> Xem báo cáo mẫu <ChevronRight className="w-4 h-4" />
-            </button>
+            <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Các bộ chỉ số đánh giá doanh nghiệp
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl mx-auto">
+              Hoàn thành khảo sát trắc nghiệm trong 5-10 phút để nhận ngay điểm số trực quan và báo cáo chiến lược từ chuyên gia.
+            </p>
+            <div className="mt-4 flex items-center justify-center">
+              <button 
+                onClick={() => setShowMockReport(true)}
+                className="text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer hover:underline"
+              >
+                <FileText className="w-4 h-4" /> Xem báo cáo mẫu <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -393,8 +370,8 @@ export default function Home({ onNavigate }: HomeProps) {
       <section id="free-tools-section" className="py-20 bg-slate-100/60 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-md mb-3">
-              <Wrench className="w-3.5 h-3.5" /> 2. Bộ công cụ Quản trị Miễn phí (Free Tools)
+            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3.5 py-1 rounded-md mb-3">
+              <Wrench className="w-3.5 h-3.5" /> Bộ công cụ Quản trị Miễn phí (Free Tools)
             </div>
             <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Công cụ hỗ trợ ra quyết định dành riêng cho CEO
@@ -405,14 +382,12 @@ export default function Home({ onNavigate }: HomeProps) {
           </div>
 
           {/* Tools Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {freeTools.map((tool) => (
               <div 
                 key={tool.id}
                 onClick={() => {
-                  if (tool.scrollTarget) {
-                    document.getElementById(tool.scrollTarget)?.scrollIntoView({ behavior: 'smooth' });
-                  } else if (tool.route) {
+                  if (tool.route) {
                     onNavigate(tool.route);
                   }
                 }}
@@ -440,110 +415,6 @@ export default function Home({ onNavigate }: HomeProps) {
               </div>
             ))}
           </div>
-
-          {/* Interactive Mini ROI Calculator Widget */}
-          <div id="roi-calculator-widget" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-xl max-w-5xl mx-auto">
-            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-              <div className="p-3 bg-emerald-100 rounded-xl text-emerald-700">
-                <Calculator className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-xl">
-                  Máy tính ROI Tự động hóa & Tích hợp AI
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Kéo thanh trượt để ước tính số tiền & số giờ làm việc tiết kiệm được cho doanh nghiệp bạn.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* Sliders Input */}
-              <div className="lg:col-span-7 space-y-6">
-                {/* Employee Count */}
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
-                    <span>Số lượng nhân sự vận hành:</span>
-                    <span className="text-indigo-600 font-mono text-sm">{employees} nhân viên</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="5" 
-                    max="500" 
-                    step="5"
-                    value={employees}
-                    onChange={(e) => setEmployees(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
-                  />
-                </div>
-
-                {/* Avg Salary */}
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
-                    <span>Mức lương trung bình:</span>
-                    <span className="text-indigo-600 font-mono text-sm">{avgSalary} triệu VNĐ / tháng</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="8" 
-                    max="50" 
-                    step="1"
-                    value={avgSalary}
-                    onChange={(e) => setAvgSalary(Number(e.target.value))}
-                    className="w-full accent-indigo-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
-                  />
-                </div>
-
-                {/* Manual Hours */}
-                <div>
-                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
-                    <span>Số giờ lặp lại thủ công (báo cáo, nhập liệu...):</span>
-                    <span className="text-amber-600 font-mono text-sm">{manualHoursPerWeek} giờ / tuần / người</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="2" 
-                    max="30" 
-                    step="1"
-                    value={manualHoursPerWeek}
-                    onChange={(e) => setManualHoursPerWeek(Number(e.target.value))}
-                    className="w-full accent-amber-500 cursor-pointer h-2 bg-slate-100 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              {/* Result Display Box */}
-              <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-lg flex flex-col justify-between">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-md inline-block mb-4">
-                    Ước tính hiệu quả năm
-                  </span>
-
-                  <div className="mb-5">
-                    <span className="text-xs text-slate-300 block mb-1">Số tiền tiết kiệm ước tính/năm:</span>
-                    <div className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono">
-                      {formatVND(yearlySavedMoney)}
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-                    <span className="text-slate-300">Tổng số giờ tiết kiệm được:</span>
-                    <span className="font-bold text-amber-300 font-mono text-sm">
-                      ~{yearlySavedHours.toLocaleString('vi-VN')} giờ/năm
-                    </span>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => onNavigate('/tool')}
-                  className="mt-6 w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-xs uppercase tracking-wider"
-                >
-                  <span>Mở full bộ công cụ Free</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -552,8 +423,8 @@ export default function Home({ onNavigate }: HomeProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-amber-700 bg-amber-100/80 px-3 py-1 rounded-md mb-3">
-                <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-600" /> 3. Thư viện Prompt AI Chuẩn hóa
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-amber-700 bg-amber-100/80 px-3.5 py-1 rounded-md mb-3">
+                <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-600" /> Thư viện Prompt AI Chuẩn hóa
               </div>
               <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Kho câu lệnh AI thực chiến cho CEO & Doanh nghiệp
@@ -628,8 +499,8 @@ export default function Home({ onNavigate }: HomeProps) {
       <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-sky-400 bg-sky-950/80 border border-sky-800/50 px-3 py-1 rounded-md mb-3">
-              <Map className="w-3.5 h-3.5" /> 4. Lộ Trình Thực Chiến
+            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-sky-400 bg-sky-950/80 border border-sky-800/50 px-3.5 py-1 rounded-md mb-3">
+              <Map className="w-3.5 h-3.5" /> Lộ Trình Thực Chiến
             </div>
             <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">
               Lộ trình chuyển đổi số & ứng dụng AI cho SME
@@ -733,23 +604,7 @@ export default function Home({ onNavigate }: HomeProps) {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-950 border-t border-slate-800 text-slate-400 py-10 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sm:flex sm:justify-between sm:items-center">
-          <div className="flex items-center justify-center mb-4 sm:mb-0 cursor-pointer" onClick={() => onNavigate('/')}>
-            <div className="bg-white px-3 py-2 rounded-lg flex items-center justify-center shadow-sm">
-              <img 
-                src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
-                alt="Base.vn" 
-                className="h-5 object-contain"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          </div>
-          <p className="text-slate-500 text-center sm:text-right">
-            © 2026 Base.vn. Đã đăng ký bản quyền. Nền tảng quản trị doanh nghiệp hiện đại.
-          </p>
-        </div>
-      </footer>
+      <Footer onNavigate={onNavigate} />
 
       {/* Mock Report Modal */}
       <AnimatePresence>

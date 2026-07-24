@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Header from './Header';
+import Footer from './Footer';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Bot, 
@@ -1007,17 +1008,7 @@ export default function PromptLibrary({ onNavigate }: PromptLibraryProps) {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-8 px-4 sm:px-6 lg:px-8 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-800">Base Enterprise AI Hub</span>
-            <span>• Nền tảng Đánh giá & Chuẩn hóa AI Quản trị Doanh nghiệp</span>
-          </div>
-          <div>
-            © {new Date().getFullYear()} Base.vn. Bản quyền thuộc về Base Inc.
-          </div>
-        </div>
-      </footer>
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 }

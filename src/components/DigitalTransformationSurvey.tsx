@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Header from './Header';
+import Footer from './Footer';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../supabaseClient';
 import { getUtmSource } from '../utils/utm';
@@ -1639,6 +1640,8 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
           )}
         </AnimatePresence>
       </div>
+
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 }

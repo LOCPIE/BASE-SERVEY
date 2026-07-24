@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from './supabaseClient';
 import { getUtmSource } from './utils/utm';
@@ -1082,6 +1083,8 @@ export default function App() {
           )}
         </AnimatePresence>
       </div>
+
+      <Footer onNavigate={navigate} />
     </div>
   );
 }

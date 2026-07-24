@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Header from './Header';
+import Footer from './Footer';
 import { 
   FileSpreadsheet, 
   ArrowLeft, 
@@ -615,19 +616,7 @@ export default function ProjectScoringMatrix({ onNavigate }: ProjectScoringMatri
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs space-y-4">
-          <div className="flex items-center justify-center gap-2">
-            <img 
-              src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
-              alt="Base.vn" 
-              className="h-5 object-contain brightness-200"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-          <p>© 2026 Base.vn - Nền tảng Quản trị Doanh nghiệp Toàn diện.</p>
-        </div>
-      </footer>
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 }
