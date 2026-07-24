@@ -15,12 +15,22 @@ import {
   FileText, 
   X, 
   TrendingUp, 
-  LineChart, 
   BarChart3, 
   Zap, 
   Shuffle, 
   Target,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Wrench,
+  Calculator,
+  Copy,
+  Check,
+  Sliders,
+  Clock,
+  ExternalLink,
+  Map,
+  ShieldCheck,
+  Briefcase,
+  PieChart
 } from 'lucide-react';
 
 interface HomeProps {
@@ -29,295 +39,318 @@ interface HomeProps {
 
 export default function Home({ onNavigate }: HomeProps) {
   const [showMockReport, setShowMockReport] = useState(false);
+  const [copiedPromptId, setCopiedPromptId] = useState<string | null>(null);
 
-  // Featured assessments
+  // Interactive Mini ROI Calculator State
+  const [employees, setEmployees] = useState<number>(30);
+  const [avgSalary, setAvgSalary] = useState<number>(15); // Million VND / month
+  const [manualHoursPerWeek, setManualHoursPerWeek] = useState<number>(10); // Hours/week/employee
+
+  // ROI Calculations
+  const hourlyRate = (avgSalary * 1000000) / 160; // 160 work hours per month
+  const yearlyManualHoursTotal = employees * manualHoursPerWeek * 52;
+  const yearlyManualCostTotal = yearlyManualHoursTotal * hourlyRate;
+  
+  // Assuming 50% efficiency gain with AI & Automation
+  const yearlySavedHours = Math.round(yearlyManualHoursTotal * 0.5);
+  const yearlySavedMoney = Math.round(yearlyManualCostTotal * 0.5);
+
+  const formatVND = (num: number) => {
+    if (num >= 1000000000) {
+      return (num / 1000000000).toFixed(1) + ' Tỷ VNĐ';
+    }
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(0) + ' Triệu VNĐ';
+    }
+    return num.toLocaleString('vi-VN') + ' VNĐ';
+  };
+
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedPromptId(id);
+    setTimeout(() => setCopiedPromptId(null), 2000);
+  };
+
+  // 1. Featured Enterprise Assessments
   const assessments = [
     {
       title: "Chỉ số chuyển đổi số doanh nghiệp",
       desc: "Đánh giá mức độ chuyển đổi số toàn diện trên các khía cạnh vận hành, công nghệ và tư duy quản trị.",
-      icon: <Layers className="w-6 h-6 text-accent" />,
+      icon: <Layers className="w-6 h-6 text-purple-600" />,
       tag: "Dành cho CEO/COO",
-      colorBg: "bg-purple-100/50 border-purple-200"
+      colorBg: "bg-purple-100/60 border-purple-200",
+      route: "/khao-sat-chuyen-doi-so"
     },
     {
       title: "Chỉ số sẵn sàng ứng dụng AI",
       desc: "Đo lường mức độ trưởng thành của dữ liệu, hạ tầng kỹ thuật và con người để tích hợp AI vào quy trình.",
-      icon: <Cpu className="w-6 h-6 text-accent-secondary" />,
-      tag: "Trọng tâm và nổi bật",
-      colorBg: "bg-cyan-100/50 border-cyan-200"
+      icon: <Cpu className="w-6 h-6 text-cyan-600" />,
+      tag: "Trọng tâm & Nổi bật",
+      colorBg: "bg-cyan-100/60 border-cyan-200",
+      route: "/khao-sat-chuyen-doi-ai"
     },
     {
       title: "Chỉ số trưởng thành quản trị nhân sự",
       desc: "Xác định khả năng thích ứng, đào tạo nguồn lực và văn hóa học hỏi của nhân tài trước làn sóng số.",
-      icon: <Users className="w-6 h-6 text-success" />,
+      icon: <Users className="w-6 h-6 text-emerald-600" />,
       tag: "HR / Quản trị",
-      colorBg: "bg-emerald-100/50 border-emerald-200"
+      colorBg: "bg-emerald-100/60 border-emerald-200",
+      route: "/chi-so-quan-tri-nhan-su"
     },
     {
       title: "Chỉ số tự động hóa quy trình",
       desc: "Khảo sát mức độ số hóa các quy trình (SOPs), loại bỏ các điểm nghẽn thủ công bằng tự động hóa.",
-      icon: <Shuffle className="w-6 h-6 text-warning" />,
+      icon: <Shuffle className="w-6 h-6 text-amber-600" />,
       tag: "Tối ưu vận hành",
-      colorBg: "bg-amber-100/50 border-amber-200"
+      colorBg: "bg-amber-100/60 border-amber-200",
+      route: "/chi-so-tu-dong-hoa-quy-trinh"
+    }
+  ];
+
+  // 2. Free Business Tools Hub
+  const freeTools = [
+    {
+      id: "scoring-matrix",
+      title: "Ma trận Đánh giá & Xếp hạng Dự án",
+      desc: "Công cụ chấm điểm ưu tiên các dự án Chuyển đổi số & AI dựa trên ROI, tính khả thi và mức độ phù hợp chiến lược.",
+      icon: <PieChart className="w-6 h-6 text-indigo-600" />,
+      tag: "Độc quyền CEO",
+      actionText: "Mở ma trận chấm điểm",
+      route: "/tool/danh-gia-va-xep-hang-du-an"
+    },
+    {
+      id: "roi-calc",
+      title: "Máy tính ROI Tự động hóa & AI",
+      desc: "Mô phỏng ngân sách & số giờ tiết kiệm được khi tự động hóa các quy trình lập lại thủ công trong doanh nghiệp.",
+      icon: <Calculator className="w-6 h-6 text-emerald-600" />,
+      tag: "Tài chính & Vận hành",
+      actionText: "Thử tính ngay bên dưới",
+      scrollTarget: "roi-calculator-widget"
+    },
+    {
+      id: "raci",
+      title: "Mô hình Phân định Trách nhiệm RACI",
+      desc: "Xác định rõ ràng ai là người Thực hiện (R), Trách nhiệm (A), Tư vấn (C) và Nhận thông tin (I) cho dự án.",
+      icon: <Target className="w-6 h-6 text-cyan-600" />,
+      tag: "SOP & Quản trị",
+      actionText: "Khám phá công cụ",
+      route: "/tool"
+    },
+    {
+      id: "turnover",
+      title: "Tính toán Chi phí Ẩn Nghỉ việc",
+      desc: "Đo lường tổng chi phí thiệt hại gián tiếp và trực tiếp khi nhân sự thôi việc để lên kế hoạch giữ chân nhân tài.",
+      icon: <BarChart3 className="w-6 h-6 text-rose-600" />,
+      tag: "Quản trị Nhân sự",
+      actionText: "Xem công cụ",
+      route: "/tool"
+    }
+  ];
+
+  // 3. Featured AI Prompts Preview
+  const featuredPrompts = [
+    {
+      id: "ceo-swot-dx",
+      dept: "Ban Giám đốc & CEO",
+      title: "Phân tích SWOT & Ma trận Ưu tiên Chuyển đổi số",
+      desc: "Đánh giá toàn diện điểm mạnh, điểm yếu và cơ hội ứng dụng công nghệ/AI cho doanh nghiệp theo ngành nghề.",
+      prompt: "Tôi là CEO công ty [Tên công ty] hoạt động trong ngành [Ngành nghề], quy mô [Số nhân sự] nhân viên. Hãy đóng vai Chuyên gia Chuyển đổi số hàng đầu, phân tích SWOT cho doanh nghiệp tôi về năng lực công nghệ và đề xuất Ma trận ưu tiên (Priority Matrix) 5 dự án số hóa/AI cần làm ngay."
+    },
+    {
+      id: "hr-kpi-ai",
+      dept: "Nhân sự & Văn hóa",
+      title: "Xây dựng Khung KPI & Điểm thưởng Tích hợp AI",
+      desc: "Thiết lập chỉ số hiệu suất làm việc (KPI/OKR) khuyến khích nhân viên chủ động dùng AI tăng năng suất.",
+      prompt: "Hãy đóng vai Chuyên gia HRD, xây dựng bộ chỉ số KPI/OKR quý cho phòng ban [Tên phòng ban] tích hợp yêu cầu sử dụng các công cụ AI (ChatGPT, Copilot, Automation) để cắt giảm 30% thời gian xử lý công việc."
+    },
+    {
+      id: "mkt-content-matrix",
+      dept: "Marketing & Bán hàng",
+      title: "Lập Ma trận Content Marketing & Funnel Sales 30 ngày",
+      desc: "Tạo kế hoạch nội dung đa kênh và kịch bản chăm sóc khách hàng tự động sát với hành vi người mua.",
+      prompt: "Tôi bán sản phẩm/dịch vụ [Tên sản phẩm] cho đối tượng [Khách hàng mục tiêu]. Hãy lập ma trận nội dung 30 ngày theo phễu chuyển đổi (AIDA) và viết 3 mẫu email chăm sóc khách hàng tự động."
+    }
+  ];
+
+  // 4. Roadmap Steps
+  const roadmapPhases = [
+    {
+      phase: "Giai đoạn 1",
+      title: "Số hóa & Chuẩn hóa Dữ liệu",
+      time: "Tháng 01 - Tháng 03",
+      desc: "Số hóa giấy tờ, chuyển từ Excel rời rạc sang phần mềm quản trị tập trung. Chuẩn hóa quy trình SOPs cốt lõi.",
+      icon: <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
+    },
+    {
+      phase: "Giai đoạn 2",
+      title: "Đào tạo Nhận thức & AI Quick-Wins",
+      time: "Tháng 04 - Tháng 06",
+      desc: "Huấn luyện nhân sự sử dụng ChatGPT/Gemini/Prompt chuẩn. Triển khai các trợ lý AI thử nghiệm cho Sale & CSKH.",
+      icon: <Zap className="w-5 h-5 text-amber-500" />
+    },
+    {
+      phase: "Giai đoạn 3",
+      title: "Tự động hóa Quy trình Workflows",
+      time: "Tháng 07 - Tháng 09",
+      desc: "Tích hợp API giữa các hệ thống CRM/ERP/Task. Loại bỏ 80% các tác vụ nhập liệu và phê duyệt thủ công.",
+      icon: <Shuffle className="w-5 h-5 text-emerald-600" />
+    },
+    {
+      phase: "Giai đoạn 4",
+      title: "Quản trị Dựa trên Dữ liệu (Data-Driven)",
+      time: "Tháng 10 - Tháng 12+",
+      desc: "Xây dựng Dashboard báo cáo thời gian thực cho Ban Giám đốc. Tối ưu hóa chi phí vận hành và nhân rộng ROI.",
+      icon: <TrendingUp className="w-5 h-5 text-cyan-600" />
     }
   ];
 
   // Benefits
   const benefits = [
     {
-      title: "Điểm đánh giá tổng thể",
-      desc: "Nhận điểm số rõ ràng tương ứng với tốc độ sẵn sàng của doanh nghiệp bạn trong kỷ nguyên công nghệ mới.",
-      icon: <Award className="w-8 h-8 text-accent" />
+      title: "Điểm số & Vị thế Doanh nghiệp",
+      desc: "Nhận chỉ số đánh giá rõ ràng tương ứng với tốc độ sẵn sàng của doanh nghiệp bạn so với chuẩn mực thị trường.",
+      icon: <Award className="w-8 h-8 text-indigo-600" />
     },
     {
-      title: "Phân tích điểm mạnh, điểm yếu",
-      desc: "Báo cáo chi tiết chỉ ra những rào cản kỹ thuật lớn nhất và các ưu thế sẵn có cần được nhân rộng.",
-      icon: <Activity className="w-8 h-8 text-accent-secondary" />
+      title: "Phân tích Rào cản & Cơ hội",
+      desc: "Báo cáo tự động chỉ rõ những điểm nghẽn kỹ thuật lớn nhất và các cơ hội tăng trưởng vượt bậc.",
+      icon: <Activity className="w-8 h-8 text-cyan-600" />
     },
     {
-      title: "Lộ trình cải thiện theo từng giai đoạn",
-      desc: "Đề xuất các bước đi thực tế từ số hóa cốt lõi, chuẩn hóa quy trình, đến ứng dụng AI mang lại ROI rõ rệt.",
-      icon: <TrendingUp className="w-8 h-8 text-warning" />
+      title: "Bộ Tool & Prompt Áp dụng Ngay",
+      desc: "Thực thi ngay lập tức với kho Prompt AI tối ưu sẵn cho CEO và bộ công cụ tính toán ROI tinh gọn.",
+      icon: <Wrench className="w-8 h-8 text-amber-500" />
     }
-  ];
-
-  // Steps
-  const steps = [
-    {
-      num: "01",
-      title: "Chọn bài đánh giá",
-      desc: "Truy cập hệ thống và chọn bộ chỉ số phù hợp nhất với trọng tâm muốn đánh giá."
-    },
-    {
-      num: "02",
-      title: "Trả lời khảo sát",
-      desc: "Hoàn thiện các câu hỏi trắc nghiệm khách quan trong vòng 5-10 phút."
-    },
-    {
-      num: "03",
-      title: "Nhận kết quả ngay",
-      desc: "Hệ thống tự động phân tích và chấm điểm trực tiếp dạng biểu đồ trực quan."
-    },
-    {
-      num: "04",
-      title: "Xem khuyến nghị cải thiện",
-      desc: "Tải báo cáo chi tiết đi kèm các đề xuất hành động thực tiễn phù hợp với điều kiện vận hành."
-    }
-  ];
-
-  // Stats
-  const stats = [
-    { value: "1.000+", label: "Doanh nghiệp tham gia" },
-    { value: "10.000+", label: "Lượt đánh giá" },
-    { value: "20+", label: "Bộ chỉ số chuyên sâu" }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50/50 selection:bg-accent/20">
-      {/* Header */}
+    <div className="min-h-screen bg-slate-50/50 selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Header Navigation */}
       <Header onNavigate={onNavigate} activeRoute="assessments" />
 
       {/* Hero Section */}
-      <section className="relative pt-12 pb-20 md:pt-16 md:pb-24 overflow-hidden bg-gradient-to-b from-slate-50/80 to-white">
-        {/* Decorative Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a05_1px,transparent_1px),linear-gradient(to_bottom,#0f172a05_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
-        
-        {/* Background blobs */}
-        <div className="absolute top-1/4 left-1/3 -translate-x-1/2 w-[550px] h-[550px] bg-accent/8 rounded-full blur-[100px] pointer-events-none animate-float-slow" />
-        <div className="absolute bottom-10 right-1/4 translate-x-1/2 w-[450px] h-[450px] bg-accent-secondary/8 rounded-full blur-[90px] pointer-events-none animate-float-reverse" />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Column: Content */}
-            <div className="lg:col-span-7 flex flex-col items-start text-left">
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider font-display shadow-sm"
+      <section className="relative pt-10 pb-16 md:pt-16 md:pb-24 overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white">
+        {/* Background Decorative Element */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            {/* Top Badge */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-indigo-200 text-xs font-bold px-4 py-2 rounded-full mb-6 shadow-inner"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+              <span>Nền tảng Quản trị & Chuyển đổi số Toàn diện từ Base.vn</span>
+            </motion.div>
+
+            {/* Main Headline */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-6"
+            >
+              Nền tảng Toàn diện Cho <br className="hidden sm:inline" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-sky-300 to-amber-300">
+                Chuyển đổi số & Ứng dụng AI
+              </span> Doanh nghiệp
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-base sm:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto mb-8 font-normal"
+            >
+              Đo lường mức độ trưởng thành số, sử dụng bộ công cụ quản trị miễn phí (Free Tools), và khai thác kho prompt AI chuẩn hóa dành riêng cho CEO & Nhà quản trị.
+            </motion.p>
+
+            {/* Action Buttons */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-wrap items-center justify-center gap-4 mb-12"
+            >
+              <button 
+                onClick={() => document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center gap-2 cursor-pointer text-sm sm:text-base"
               >
-                <Sparkles className="w-3.5 h-3.5 animate-pulse text-indigo-600" /> Đóng góp nghiên cứu từ Base.vn
-              </motion.div>
-              
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="font-roboto text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-5"
+                <Layers className="w-5 h-5" />
+                <span>Khảo sát Doanh nghiệp</span>
+              </button>
+
+              <button 
+                onClick={() => document.getElementById('free-tools-section')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold px-7 py-3.5 rounded-xl border border-slate-700 transition-all flex items-center gap-2 cursor-pointer text-sm sm:text-base"
               >
-                Khám phá mức độ trưởng thành của doanh nghiệp qua <span className="text-gradient">các bài đánh giá chuyên sâu</span>
-              </motion.h1>
+                <Wrench className="w-5 h-5 text-amber-400" />
+                <span>Free Business Tools</span>
+              </button>
 
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-base sm:text-lg text-slate-600 leading-relaxed mb-6 max-w-xl"
+              <button 
+                onClick={() => onNavigate('/prompt-library')}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold px-7 py-3.5 rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer text-sm sm:text-base"
               >
-                Nhận điểm số, phân tích và khuyến nghị dựa trên các bộ tiêu chí được xây dựng cho nhiều lĩnh vực quản trị và vận hành doanh nghiệp.
-              </motion.p>
+                <Zap className="w-5 h-5 fill-slate-950" />
+                <span>Kho Prompt AI</span>
+              </button>
+            </motion.div>
 
-              {/* Quick Checklist for UX/UI reassurance */}
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.25 }}
-                className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 w-full max-w-lg"
-              >
-                <div className="flex items-center gap-2 text-slate-700 text-sm font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Hoàn thành nhanh trong 5-10 phút</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-700 text-sm font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Nhận kết quả và biểu đồ tức thì</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-700 text-sm font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Định vị vị thế so với thị trường</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-700 text-sm font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>100% Bảo mật dữ liệu khảo sát</span>
-                </div>
-              </motion.div>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
-              >
-                <button 
-                  onClick={() => document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="bg-gradient-accent text-white px-8 py-4 text-base font-bold rounded-xl shadow-lg hover:shadow-xl hover:shadow-accent/10 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  Bắt đầu đánh giá <ArrowRight className="w-5 h-5 animate-pulse" />
-                </button>
-                <button 
-                  onClick={() => setShowMockReport(true)}
-                  className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-8 py-4 text-base font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <FileText className="w-5 h-5 text-slate-500" /> Xem báo cáo mẫu
-                </button>
-              </motion.div>
-            </div>
-
-            {/* Right Column: Premium Mockup/Dashboard Preview Widget */}
-            <div className="lg:col-span-5 relative">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 30 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xl max-w-md mx-auto overflow-hidden group hover:border-accent/40 hover:-translate-y-1 transition-all"
-              >
-                {/* Header elements */}
-                <div className="flex justify-between items-start border-b border-slate-100 pb-4 mb-5">
-                  <div>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded uppercase tracking-wide">
-                      Mẫu kết quả
-                    </span>
-                    <h4 className="font-display font-black text-slate-900 mt-1.5 leading-snug text-base">
-                      Chỉ số sẵn sàng ứng dụng AI
-                    </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Doanh nghiệp: TechLink Corp</p>
-                  </div>
-                  <div className="bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg text-center border border-emerald-100 flex items-center gap-1 shadow-sm">
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold font-mono">74/100</span>
-                  </div>
-                </div>
-
-                {/* Score meters */}
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold mb-1.5 text-slate-700">
-                      <span>Dữ liệu & Quy trình chuẩn hóa</span>
-                      <span className="font-mono text-indigo-600 font-bold">85%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: "85%" }}
-                        transition={{ duration: 1.2, delay: 0.5 }}
-                        className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold mb-1.5 text-slate-700">
-                      <span>Hạ tầng Công nghệ thông tin</span>
-                      <span className="font-mono text-cyan-600 font-bold">60%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: "60%" }}
-                        transition={{ duration: 1.2, delay: 0.7 }}
-                        className="bg-gradient-to-r from-cyan-500 to-cyan-600 h-full rounded-full"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-semibold mb-1.5 text-slate-700">
-                      <span>Năng lực Con người & Đội ngũ</span>
-                      <span className="font-mono text-emerald-600 font-bold">72%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: "72%" }}
-                        transition={{ duration: 1.2, delay: 0.9 }}
-                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Alert/Recommendation Box */}
-                <div className="mt-6 p-3 bg-indigo-50/60 border border-indigo-100/50 rounded-xl">
-                  <div className="flex items-start gap-2.5">
-                    <span className="text-sm shrink-0">💡</span>
-                    <div>
-                      <h5 className="text-[11px] font-bold text-indigo-950">Khuyến nghị trọng tâm:</h5>
-                      <p className="text-[11px] text-indigo-700 leading-relaxed mt-0.5 font-medium">
-                        Chuẩn hóa quy trình thu thập dữ liệu tự động trước khi triển khai các trợ lý ảo (AI Agent).
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Simulated decorative status bar */}
-                <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping" />
-                    <span>Hệ thống phân tích trực tuyến</span>
-                  </span>
-                  <span>Mức độ: Khá (Silver)</span>
-                </div>
-              </motion.div>
-
-              {/* Backing glow element for extra physical depth */}
-              <div className="absolute inset-0 max-w-md mx-auto -z-10 bg-slate-200/30 rounded-2xl blur-xl translate-y-3 pointer-events-none" />
-            </div>
-
+            {/* Quick Stats Grid */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 max-w-4xl mx-auto text-left"
+            >
+              <div className="p-3">
+                <div className="text-2xl sm:text-3xl font-black text-indigo-400 font-mono">4+</div>
+                <div className="text-xs text-slate-300 font-medium">Bộ chỉ số khảo sát</div>
+              </div>
+              <div className="p-3 border-l border-white/10">
+                <div className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">5+</div>
+                <div className="text-xs text-slate-300 font-medium">Free Business Tools</div>
+              </div>
+              <div className="p-3 border-l border-white/10">
+                <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">50+</div>
+                <div className="text-xs text-slate-300 font-medium">Prompt AI thực chiến</div>
+              </div>
+              <div className="p-3 border-l border-white/10">
+                <div className="text-2xl sm:text-3xl font-black text-sky-400 font-mono">1.000+</div>
+                <div className="text-xs text-slate-300 font-medium">Doanh nghiệp tin dùng</div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Featured Assessments Section */}
-      <section id="featured-assessments" className="py-20 bg-slate-50 border-y border-slate-100">
+      {/* SECTION 1: Featured Enterprise Assessments */}
+      <section id="featured-assessments" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-display text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">
-              Các bài đánh giá nổi bật
-            </h2>
-            <p className="text-slate-600 text-sm">
-              Được thiết kế dựa trên khung năng lực chuẩn quốc tế giúp đo đếm sức mạnh số của mọi phòng ban.
-            </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-md mb-3">
+                <Layers className="w-3.5 h-3.5" /> 1. Khảo sát & Đo lường Sức mạnh Số
+              </div>
+              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                Các bộ chỉ số đánh giá doanh nghiệp
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl">
+                Hoàn thành khảo sát trắc nghiệm trong 5-10 phút để nhận ngay điểm số trực quan và báo cáo chiến lược từ chuyên gia.
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowMockReport(true)}
+              className="mt-4 md:mt-0 text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+            >
+              <FileText className="w-4 h-4" /> Xem báo cáo mẫu <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -327,31 +360,26 @@ export default function Home({ onNavigate }: HomeProps) {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all hover:border-accent/30 group cursor-pointer flex flex-col justify-between"
-                onClick={() => onNavigate(
-                  idx === 0 ? '/khao-sat-chuyen-doi-so' : 
-                  idx === 2 ? '/chi-so-quan-tri-nhan-su' : 
-                  idx === 3 ? '/chi-so-tu-dong-hoa-quy-trinh' :
-                  '/khao-sat-chuyen-doi-ai'
-                )}
+                transition={{ duration: 0.4, delay: idx * 0.1 }}
+                className="bg-white border border-slate-200 hover:border-indigo-300 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group cursor-pointer"
+                onClick={() => onNavigate(a.route)}
               >
                 <div>
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 border ${a.colorBg}`}>
                     {a.icon}
                   </div>
-                  <span className="inline-block text-[10px] bg-slate-100 text-slate-600 font-bold px-2.5 py-1 rounded-md mb-3.5 uppercase tracking-wide">
+                  <span className="inline-block text-[10px] bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-md mb-3 uppercase tracking-wide">
                     {a.tag}
                   </span>
-                  <h3 className="font-display font-bold text-slate-900 group-hover:text-accent transition-colors mb-2 text-base leading-snug">
+                  <h3 className="font-display font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mb-2 text-base leading-snug">
                     {a.title}
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed mb-4">
                     {a.desc}
                   </p>
                 </div>
-                
-                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-accent group-hover:translate-x-1 transition-transform">
+
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600 group-hover:translate-x-1 transition-transform">
                   <span>Khảo sát miễn phí</span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
@@ -361,15 +389,297 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section>
 
-      {/* What Businesses Get Section */}
-      <section id="benefits" className="py-20 bg-white">
+      {/* SECTION 2: Free Business Tools Hub & Interactive ROI Calculator */}
+      <section id="free-tools-section" className="py-20 bg-slate-100/60 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-md mb-3">
+              <Wrench className="w-3.5 h-3.5" /> 2. Bộ công cụ Quản trị Miễn phí (Free Tools)
+            </div>
+            <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Công cụ hỗ trợ ra quyết định dành riêng cho CEO
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base mt-2">
+              Các template, máy tính ROI và ma trận xếp hạng dự án giúp tối ưu hoá nguồn lực và tiết kiệm hàng trăm triệu chi phí vận hành.
+            </p>
+          </div>
+
+          {/* Tools Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            {freeTools.map((tool) => (
+              <div 
+                key={tool.id}
+                onClick={() => {
+                  if (tool.scrollTarget) {
+                    document.getElementById(tool.scrollTarget)?.scrollIntoView({ behavior: 'smooth' });
+                  } else if (tool.route) {
+                    onNavigate(tool.route);
+                  }
+                }}
+                className="bg-white rounded-2xl border border-slate-200 hover:border-emerald-300 p-6 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-4">
+                    {tool.icon}
+                  </div>
+                  <span className="inline-block text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded mb-2">
+                    {tool.tag}
+                  </span>
+                  <h3 className="font-bold text-slate-900 text-base mb-2 group-hover:text-emerald-700 transition-colors">
+                    {tool.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                    {tool.desc}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
+                  <span>{tool.actionText}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Interactive Mini ROI Calculator Widget */}
+          <div id="roi-calculator-widget" className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-xl max-w-5xl mx-auto">
+            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+              <div className="p-3 bg-emerald-100 rounded-xl text-emerald-700">
+                <Calculator className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 text-xl">
+                  Máy tính ROI Tự động hóa & Tích hợp AI
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Kéo thanh trượt để ước tính số tiền & số giờ làm việc tiết kiệm được cho doanh nghiệp bạn.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Sliders Input */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* Employee Count */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
+                    <span>Số lượng nhân sự vận hành:</span>
+                    <span className="text-indigo-600 font-mono text-sm">{employees} nhân viên</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="5" 
+                    max="500" 
+                    step="5"
+                    value={employees}
+                    onChange={(e) => setEmployees(Number(e.target.value))}
+                    className="w-full accent-indigo-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
+                  />
+                </div>
+
+                {/* Avg Salary */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
+                    <span>Mức lương trung bình:</span>
+                    <span className="text-indigo-600 font-mono text-sm">{avgSalary} triệu VNĐ / tháng</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="8" 
+                    max="50" 
+                    step="1"
+                    value={avgSalary}
+                    onChange={(e) => setAvgSalary(Number(e.target.value))}
+                    className="w-full accent-indigo-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
+                  />
+                </div>
+
+                {/* Manual Hours */}
+                <div>
+                  <div className="flex justify-between text-xs font-bold text-slate-700 mb-2">
+                    <span>Số giờ lặp lại thủ công (báo cáo, nhập liệu...):</span>
+                    <span className="text-amber-600 font-mono text-sm">{manualHoursPerWeek} giờ / tuần / người</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="2" 
+                    max="30" 
+                    step="1"
+                    value={manualHoursPerWeek}
+                    onChange={(e) => setManualHoursPerWeek(Number(e.target.value))}
+                    className="w-full accent-amber-500 cursor-pointer h-2 bg-slate-100 rounded-lg"
+                  />
+                </div>
+              </div>
+
+              {/* Result Display Box */}
+              <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-lg flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-md inline-block mb-4">
+                    Ước tính hiệu quả năm
+                  </span>
+
+                  <div className="mb-5">
+                    <span className="text-xs text-slate-300 block mb-1">Số tiền tiết kiệm ước tính/năm:</span>
+                    <div className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono">
+                      {formatVND(yearlySavedMoney)}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs">
+                    <span className="text-slate-300">Tổng số giờ tiết kiệm được:</span>
+                    <span className="font-bold text-amber-300 font-mono text-sm">
+                      ~{yearlySavedHours.toLocaleString('vi-VN')} giờ/năm
+                    </span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => onNavigate('/tool')}
+                  className="mt-6 w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-xs uppercase tracking-wider"
+                >
+                  <span>Mở full bộ công cụ Free</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3: Featured Prompt AI Library Highlight */}
+      <section className="py-20 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-amber-700 bg-amber-100/80 px-3 py-1 rounded-md mb-3">
+                <Zap className="w-3.5 h-3.5 text-amber-600 fill-amber-600" /> 3. Thư viện Prompt AI Chuẩn hóa
+              </div>
+              <h2 className="font-display text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                Kho câu lệnh AI thực chiến cho CEO & Doanh nghiệp
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl">
+                Hơn 50+ câu lệnh đã được tối ưu sẵn cho ChatGPT, Claude & Gemini. Sao chép và điền thông số doanh nghiệp áp dụng ngay.
+              </p>
+            </div>
+            <button 
+              onClick={() => onNavigate('/prompt-library')}
+              className="mt-4 md:mt-0 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+            >
+              <span>Xem tất cả 50+ Prompt</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Featured Prompts Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {featuredPrompts.map((p) => {
+              const isCopied = copiedPromptId === p.id;
+              return (
+                <div 
+                  key={p.id}
+                  className="bg-slate-50 rounded-2xl border border-slate-200 p-6 flex flex-col justify-between hover:border-amber-300 hover:shadow-md transition-all group"
+                >
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase bg-amber-100 text-amber-800 px-2.5 py-1 rounded-md mb-3 inline-block">
+                      {p.dept}
+                    </span>
+                    <h3 className="font-bold text-slate-900 text-base mb-2 group-hover:text-amber-700 transition-colors">
+                      {p.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                      {p.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-200/60 flex items-center justify-between">
+                    <button 
+                      onClick={() => copyToClipboard(p.prompt, p.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-600">Đã Copy</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy nhanh</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button 
+                      onClick={() => onNavigate('/prompt-library')}
+                      className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      Tùy biến <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: Digital Transformation & AI Implementation Roadmap */}
+      <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-sky-400 bg-sky-950/80 border border-sky-800/50 px-3 py-1 rounded-md mb-3">
+              <Map className="w-3.5 h-3.5" /> 4. Lộ Trình Thực Chiến
+            </div>
+            <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight">
+              Lộ trình chuyển đổi số & ứng dụng AI cho SME
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base mt-2">
+              Khung triển khai 4 giai đoạn tinh gọn giúp doanh nghiệp đạt lợi nhuận và ROI rõ ràng, tránh lãng phí ngân sách.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {roadmapPhases.map((phase, idx) => (
+              <div 
+                key={idx}
+                className="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between hover:border-sky-500/50 transition-all"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-mono font-bold text-sky-400 bg-sky-950 border border-sky-800/50 px-2.5 py-1 rounded-md">
+                      {phase.phase}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-mono">{phase.time}</span>
+                  </div>
+
+                  <h3 className="font-bold text-white text-base mb-2">
+                    {phase.title}
+                  </h3>
+                  <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                    {phase.desc}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-700/60 flex items-center gap-2 text-xs text-slate-400">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Chuẩn hóa & đo lường KPI</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5: Benefits Section */}
+      <section className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-display text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">
-              Doanh nghiệp nhận được gì?
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Doanh nghiệp nhận được gì khi tham gia?
             </h2>
-            <p className="text-slate-600 text-sm">
-              Không chỉ là điểm số, chúng tôi mang lại báo cáo chiến lược trực quan hỗ trợ đắc lực cho các quyết sách của nhà lãnh đạo.
+            <p className="text-slate-600 text-sm mt-2">
+              Báo cáo chiến lược trực quan kết hợp bộ công cụ thực thi hỗ trợ đắc lực cho các quyết sách của nhà lãnh đạo.
             </p>
           </div>
 
@@ -377,12 +687,12 @@ export default function Home({ onNavigate }: HomeProps) {
             {benefits.map((b, idx) => (
               <div 
                 key={idx}
-                className="relative bg-slate-50 border border-slate-100 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-md hover:bg-white hover:border-accent/20"
+                className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-md hover:bg-white"
               >
-                <div className="w-14 h-14 rounded-xl bg-white border border-slate-100 flex items-center justify-center mb-6 shadow-sm">
+                <div className="w-14 h-14 rounded-xl bg-white border border-slate-200 flex items-center justify-center mb-6 shadow-sm">
                   {b.icon}
                 </div>
-                <h3 className="font-display font-bold text-slate-900 mb-3 text-lg">
+                <h3 className="font-bold text-slate-900 mb-2 text-lg">
                   {b.title}
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
@@ -394,91 +704,49 @@ export default function Home({ onNavigate }: HomeProps) {
         </div>
       </section>
 
-      {/* Execution Process Section */}
-      <section id="process" className="py-20 bg-slate-50 border-y border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-display text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">
-              Quy trình thực hiện
-            </h2>
-            <p className="text-slate-600 text-sm">
-              Trải nghiệm hành trình chuyển đổi số tinh gọn và tối ưu năng lực quản trị chỉ với 4 bước đơn giản.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-            {steps.map((s, idx) => (
-              <div key={idx} className="relative flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-accent flex items-center justify-center text-white text-xl font-black shadow-lg mb-6 z-10">
-                  {s.num}
-                </div>
-                {idx < 3 && (
-                  <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 border-t border-dashed border-slate-300 z-0" />
-                )}
-                <h3 className="font-display font-bold text-slate-900 mb-3 text-base">
-                  {s.title}
-                </h3>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-[200px]">
-                  {s.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section id="stats" className="py-20 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3C/g%3E%3C/svg%3E")` }} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 text-center">
-            {stats.map((stat, idx) => (
-              <div key={idx} className="flex flex-col items-center">
-                <span className="font-display text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-accent-secondary via-white to-accent mb-3">
-                  {stat.value}
-                </span>
-                <span className="text-slate-400 font-semibold text-sm">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer CTA Section */}
-      <section className="py-20 md:py-28 bg-white relative">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
-          <h2 className="font-display text-3xl sm:text-4xl font-black text-slate-900 mb-4 tracking-tight">
-            Bạn đã sẵn sàng đánh giá năng lực doanh nghiệp của mình?
+      {/* SECTION 6: Footer CTA */}
+      <section className="py-20 bg-slate-900 text-white text-center relative">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-display text-2xl sm:text-4xl font-extrabold mb-4 tracking-tight">
+            Sẵn sàng nâng tầm năng lực quản trị doanh nghiệp?
           </h2>
-          <p className="text-slate-600 text-base max-w-2xl mx-auto mb-10 leading-relaxed">
-            Bắt đầu khảo sát miễn phí và nhận báo cáo chi tiết ngay hôm nay. Chỉ với 5–10 phút để nắm giữ tương lai đổi mới.
+          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto mb-8 leading-relaxed">
+            Khám phá ngay các bài khảo sát miễn phí hoặc trải nghiệm hệ sinh thái phần mềm quản trị Base.vn.
           </p>
-          <button 
-            onClick={() => document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' })}
-            className="bg-gradient-accent text-white px-10 py-5 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 flex items-center justify-center gap-2.5 mx-auto cursor-pointer"
-          >
-            Bắt đầu đánh giá ngay <ArrowRight className="w-5 h-5 font-bold" />
-          </button>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <button 
+              onClick={() => document.getElementById('featured-assessments')?.scrollIntoView({ behavior: 'smooth' })}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-4 rounded-xl shadow-lg transition-all cursor-pointer text-sm"
+            >
+              Bắt đầu đánh giá ngay
+            </button>
+            <button 
+              onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey', '_blank', 'noopener,noreferrer')}
+              className="bg-white hover:bg-slate-100 text-slate-900 font-bold px-8 py-4 rounded-xl transition-all cursor-pointer text-sm flex items-center gap-2"
+            >
+              <span>Đăng ký Demo Base.vn</span>
+              <ExternalLink className="w-4 h-4 text-slate-500" />
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Footer info */}
-      <footer className="bg-slate-50 border-t border-slate-200 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:flex sm:justify-between sm:items-center">
+      {/* Footer */}
+      <footer className="bg-slate-950 border-t border-slate-800 text-slate-400 py-10 text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sm:flex sm:justify-between sm:items-center">
           <div className="flex items-center justify-center mb-4 sm:mb-0 cursor-pointer" onClick={() => onNavigate('/')}>
-            <div className="bg-white px-3.5 py-2.5 rounded-lg flex items-center justify-center shadow-sm border border-slate-100">
+            <div className="bg-white px-3 py-2 rounded-lg flex items-center justify-center shadow-sm">
               <img 
                 src="https://static-gcdn.basecdn.net/landing/base.vn/image/v2/logo/base.png" 
                 alt="Base.vn" 
-                className="h-5.5 object-contain"
+                className="h-5 object-contain"
                 referrerPolicy="no-referrer"
               />
             </div>
           </div>
-          <p className="text-slate-400 text-xs">
-            © 2026 Base.vn. Đã đăng ký bản quyền. Công cụ quản trị doanh nghiệp hiện đại.
+          <p className="text-slate-500 text-center sm:text-right">
+            © 2026 Base.vn. Đã đăng ký bản quyền. Nền tảng quản trị doanh nghiệp hiện đại.
           </p>
         </div>
       </footer>
@@ -509,7 +777,7 @@ export default function Home({ onNavigate }: HomeProps) {
                 </div>
                 <button 
                   onClick={() => setShowMockReport(false)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-slate-400 hover:text-white transition-colors cursor-pointer"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -519,61 +787,29 @@ export default function Home({ onNavigate }: HomeProps) {
               <div className="p-8 overflow-y-auto flex-1 space-y-8 bg-slate-50/50">
                 {/* Visual score card */}
                 <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row gap-6 items-center">
-                  <div className="w-32 h-32 rounded-full border-8 border-accent/20 border-t-accent flex items-center justify-center shrink-0">
-                    <span className="font-display text-3xl font-black text-slate-900">65%</span>
+                  <div className="w-32 h-32 rounded-full border-8 border-indigo-200 border-t-indigo-600 flex items-center justify-center shrink-0">
+                    <span className="font-display text-3xl font-black text-slate-900">74%</span>
                   </div>
                   <div>
-                    <span className="inline-block bg-accent/10 text-accent text-[10px] font-bold px-2 py-1 rounded-md mb-2">ĐÁNH GIÁ: KHẢ QUAN</span>
-                    <h3 className="font-display font-bold text-slate-900 text-lg mb-1.5">Giai đoạn Sẵn sàng Triển khai (Deploy Stage)</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Nền tảng hạ tầng và tổ chức của bạn đã sẵn sàng tiếp nhận các quy trình số hóa dựa trên mô hình học máy. Hãy tập trung bắt đầu từ một vài dự án thử nghiệm nhỏ nhưng hiệu quả cao.
+                    <span className="inline-block bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2.5 py-1 rounded-md mb-2">ĐÁNH GIÁ: SẴN SÀNG CAO</span>
+                    <h3 className="font-bold text-slate-900 text-lg mb-1.5">Giai đoạn Triển khai AI (Deploy Stage)</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Nền tảng hạ tầng và tổ chức của bạn đã sẵn sàng tiếp nhận các quy trình số hóa dựa trên mô hình học máy. Hãy tập trung bắt đầu từ một vài dự án thử nghiệm nhỏ mang lại hiệu quả trực tiếp.
                     </p>
-                  </div>
-                </div>
-
-                {/* Score dimensions */}
-                <div>
-                  <h4 className="font-display font-bold text-slate-950 mb-4 text-xs tracking-wider uppercase">Chi tiết theo 5 chiều năng lượng phối hợp</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      { name: "Chiến lược & Lãnh đạo", val: 80, color: "bg-purple-500" },
-                      { name: "Dữ liệu & Hạ tầng", val: 50, color: "bg-cyan-500" },
-                      { name: "Năng lực Nhân sự", val: 65, color: "bg-emerald-500" },
-                      { name: "Quy trình & Vận hành", val: 75, color: "bg-amber-500" },
-                      { name: "Công nghệ & Hệ thống", val: 60, color: "bg-red-500" }
-                    ].map((d, idx) => (
-                      <div key={idx} className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
-                        <div className="flex justify-between items-center text-xs font-bold text-slate-700 mb-1.5">
-                          <span>{d.name}</span>
-                          <span>{d.val}%</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                          <div className={`h-full ${d.color}`} style={{ width: `${d.val}%` }} />
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
 
                 {/* Recommendations */}
                 <div className="bg-white p-6 rounded-2xl border border-slate-200">
-                  <h4 className="font-display font-bold text-slate-900 mb-4 text-sm flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-yellow-500" /> Khuyến nghị Hành động (Roadmap gợi ý từ chuyên gia)
+                  <h4 className="font-bold text-slate-900 mb-4 text-sm flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-500" /> Khuyến nghị Lộ trình Thực thi
                   </h4>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-4 bg-purple-50/50 border border-purple-100 rounded-xl">
-                      <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700 text-xs font-bold shrink-0">1</div>
-                      <div>
-                        <h5 className="text-xs font-bold text-purple-950 mb-1">Thiết lập Pilot Team cho giải pháp AI</h5>
-                        <p className="text-[11px] text-purple-700 leading-normal">Chọn đội ngũ nòng cốt 3-5 nhân sự thành thạo công nghệ chạy thử nghiệm AI bot trả lời khách tự động (timeline 30 ngày).</p>
-                      </div>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-indigo-50/60 border border-indigo-100 rounded-xl text-xs text-indigo-900 font-medium">
+                      1. Thử nghiệm AI Agent cho CSKH & Sale tự động trong 30 ngày.
                     </div>
-                    <div className="flex items-start gap-3 p-4 bg-cyan-50/50 border border-cyan-100 rounded-xl">
-                      <div className="w-7 h-7 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700 text-xs font-bold shrink-0">2</div>
-                      <div>
-                        <h5 className="text-xs font-bold text-cyan-950 mb-1">Chuẩn hóa cấu trúc hạ tầng dữ liệu dữ phòng</h5>
-                        <p className="text-[11px] text-cyan-700 leading-normal">Lọc và định dạng lại tất cả danh bạ khách hàng tiềm năng cũng như tài liệu quy trình nội bộ trước khi cấp làm Knowledge-base cho AI.</p>
-                      </div>
+                    <div className="p-4 bg-emerald-50/60 border border-emerald-100 rounded-xl text-xs text-emerald-900 font-medium">
+                      2. Chuẩn hóa quy trình tài liệu hóa SOPs và phân quyền truy cập dữ liệu.
                     </div>
                   </div>
                 </div>
@@ -583,7 +819,7 @@ export default function Home({ onNavigate }: HomeProps) {
               <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-white">
                 <button 
                   onClick={() => setShowMockReport(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-xs transition-colors"
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-xs transition-colors cursor-pointer"
                 >
                   Đóng lại
                 </button>
@@ -592,7 +828,7 @@ export default function Home({ onNavigate }: HomeProps) {
                     setShowMockReport(false);
                     onNavigate('/khao-sat-chuyen-doi-ai');
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-accent text-white font-bold text-xs shadow-md hover:shadow-lg transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   Bắt đầu Khảo sát thực tế <ArrowRight className="w-4 h-4" />
                 </button>
