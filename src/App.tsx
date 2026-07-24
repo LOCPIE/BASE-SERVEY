@@ -6,6 +6,7 @@ import Home from './components/Home';
 import DigitalTransformationSurvey from './components/DigitalTransformationSurvey';
 import HRMaturitySurvey from './components/HRMaturitySurvey';
 import ProcessAutomationSurvey from './components/ProcessAutomationSurvey';
+import BusinessTools from './components/BusinessTools';
 import { 
   Bot, 
   Clock, 
@@ -86,6 +87,7 @@ export default function App() {
   const [route, setRoute] = useState(() => {
     const path = window.location.pathname;
     const hash = window.location.hash;
+    if (hash === '#tool' || path === '/tool') return '/tool';
     if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') return '/khao-sat-chuyen-doi-so';
     if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') return '/khao-sat-chuyen-doi-ai';
     if (hash === '#chi-so-quan-tri-nhan-su' || path === '/chi-so-quan-tri-nhan-su') return '/chi-so-quan-tri-nhan-su';
@@ -95,7 +97,8 @@ export default function App() {
 
   const navigate = (to: string) => {
     let target = to;
-    if (to === '/khao-sat-chuyen-doi-so') target = '/#khao-sat-chuyen-doi-so';
+    if (to === '/tool') target = '/tool';
+    else if (to === '/khao-sat-chuyen-doi-so') target = '/#khao-sat-chuyen-doi-so';
     else if (to === '/khao-sat-chuyen-doi-ai') target = '/#khao-sat-chuyen-doi-ai';
     else if (to === '/chi-so-quan-tri-nhan-su') target = '/#chi-so-quan-tri-nhan-su';
     else if (to === '/chi-so-tu-dong-hoa-quy-trinh') target = '/#chi-so-tu-dong-hoa-quy-trinh';
@@ -116,7 +119,9 @@ export default function App() {
     const handlePopState = () => {
       const path = window.location.pathname;
       const hash = window.location.hash;
-      if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') {
+      if (hash === '#tool' || path === '/tool') {
+        setRoute('/tool');
+      } else if (hash === '#khao-sat-chuyen-doi-so' || path === '/khao-sat-chuyen-doi-so') {
         setRoute('/khao-sat-chuyen-doi-so');
       } else if (hash === '#khao-sat-chuyen-doi-ai' || path === '/khao-sat-chuyen-doi-ai') {
         setRoute('/khao-sat-chuyen-doi-ai');
@@ -217,6 +222,141 @@ export default function App() {
       };
     }
   }, [percentageScore]);
+
+  const analysisData = useMemo(() => {
+    // Determine highest and lowest dimensions
+    const dimensionPercentages = Object.entries(DIMENSIONS).map(([name, cfg]) => {
+      const score = dimensionScores[name] || 0;
+      const pct = Math.round((score / cfg.max) * 100);
+      return { name, score, max: cfg.max, pct };
+    });
+
+    const sorted = [...dimensionPercentages].sort((a, b) => b.pct - a.pct);
+    const highest = sorted[0];
+    const lowest = sorted[sorted.length - 1];
+
+    const adviceByDimension: Record<string, {
+      strengthTitle: string;
+      strengthDesc: string;
+      strengthTips: string[];
+      weaknessTitle: string;
+      weaknessDesc: string;
+      weaknessTips: string[];
+    }> = {
+      "Chiến lược & Lãnh đạo": {
+        strengthTitle: "Lãnh đạo cam kết & Tư duy đổi mới cao",
+        strengthDesc: "Ban quản lý doanh nghiệp sẵn sàng đầu tư và quyết liệt đưa AI vào mục tiêu dài hạn. Đây là ngòi nổ quan trọng nhất thúc đẩy sự đồng thuận của nhân sự.",
+        strengthTips: [
+          "Xây dựng KPIs cụ thể liên quan đến tỷ lệ áp dụng AI trong các bộ phận.",
+          "Chuẩn hóa ngân sách thử nghiệm R&D định kỳ hàng năm cho các sáng kiến AI."
+        ],
+        weaknessTitle: "Thiếu Chiến lược Định hướng AI rõ ràng",
+        weaknessDesc: "Mặc dù ban điều hành quan tâm, nhưng doanh nghiệp chưa xác định được đầu ra cụ thể, thiếu KPIs lượng hóa và dễ rơi vào bẫy 'sốt sắng công nghệ' mà không thực chất.",
+        weaknessTips: [
+          "Bắt đầu thiết kế Framework Khảo sát ROI cốt lõi cho mọi bài toán nghiệp vụ.",
+          "Xây dựng cẩm nang định vị chiến lược AI thiết thực bám sát mục tiêu tăng trưởng."
+        ]
+      },
+      "Dữ liệu & Hạ tầng": {
+        strengthTitle: "Hạ tầng dữ liệu số hóa tương đồng tốt",
+        strengthDesc: "Doanh nghiệp sở hữu cấu trúc dữ liệu khá tốt, hệ thống thông tin rõ ràng, sẵn sàng làm nguyên liệu tinh sạch để huấn luyện hoặc nạp vào các mô hình AI.",
+        strengthTips: [
+          "Từ bước đồng bộ, tiến hành thiết kế Data Lake chuyên sâu cho dữ liệu khách hàng.",
+          "Bắt đầu ứng dụng các kỹ thuật Vector Database phục vụ cho các hệ thống RAG (Retrieval-Augmented Generation) nội bộ."
+        ],
+        weaknessTitle: "Dữ liệu rời rạc & Chưa quy chuẩn",
+        weaknessDesc: "Phần lớn dữ liệu nằm rải rác trên file cá nhân hoặc Excel thủ công. Không có dữ liệu sạch đồng nghĩa các mô hình AI khi đưa vào sẽ phản hồi sai số lớn (Garbage in, Garbage out).",
+        weaknessTips: [
+          "Thực hiện chiến dịch chuẩn hóa dọn dẹp dữ liệu (Data Cleansing) trên một phòng ban trước.",
+          "Đồng nhất dữ liệu thông tin khách hàng từ các kênh về một trục CRM tập trung."
+        ]
+      },
+      "Năng lực Nhân sự": {
+        strengthTitle: "Nhân sự cởi mở & Thích nghi tốt",
+        strengthDesc: "Đội ngũ nhân sự đầy tinh thần chủ động tìm hiểu công cụ mới, ít rào cản tâm lý kháng cự và phản ứng tích cực với các trợ lý thông minh.",
+        strengthTips: [
+          "Bổ nhiệm các nhóm nòng cốt (AI Champions) tại mỗi phòng ban để nhân rộng kỹ năng.",
+          "Ban hành quy chế khen thưởng thiết thực cho sáng kiến ứng dụng AI giảm tải giờ làm."
+        ],
+        weaknessTitle: "Thiếu kỹ năng số & Sợ hãi công nghệ",
+        weaknessDesc: "Nhân viên chưa khai thác công cụ AI, lo sợ sự thay đổi hoặc lo ngại bị AI thay thế. Kỹ năng prompt và khai thác dữ liệu còn rất thô sơ.",
+        weaknessTips: [
+          "Tổ chức khóa huấn luyện thực chiến 'Khai thác Trợ lý AI thế hệ mới' thời lượng ngắn hằng tuần.",
+          "Cung cấp các prompt-template mẫu giải quyết công việc hành chính trực tiếp cho nhân viên."
+        ]
+      },
+      "Quy trình & Vận hành": {
+        strengthTitle: "Quy trình SOP chuẩn hóa hoàn chỉnh",
+        strengthDesc: "Doanh nghiệp có hệ thống quy trình vận hành rõ nét, được ghi chép kỹ lưỡng. Đây là nền tảng vàng vì AI cực kỳ hiệu quả khi tự động hoá các quy trình có logic chuẩn.",
+        strengthTips: [
+          "Phân tích chuỗi quy trình để định vị các điểm nghẽn của con người có thể thay thế bằng AI Agent.",
+          "Đóng gói quy trình thành tài liệu nguồn (Knowledge Base) để huấn luyện Chatbot nội bộ giải đáp SOP tự động."
+        ],
+        weaknessTitle: "Vận hành theo lối mòn cảm tính",
+        weaknessDesc: "Quy trình vận hành chưa quy chuẩn hóa, xử lý theo kinh nghiệm cá nhân. Nếu đưa AI vào hệ thống lộn xộn, chỉ tạo ra lỗi nhanh hơn với quy mô lớn hơn.",
+        weaknessTips: [
+          "Sơ đồ hóa luồng phối hợp phòng ban cốt lõi trước khi tìm cách tích hợp công cụ thông minh.",
+          "Áp dụng đo lường thời gian ở mỗi khâu (SLA) để xác định điểm nghẽn thực."
+        ]
+      },
+      "Công nghệ & Hệ thống": {
+        strengthTitle: "Hệ sinh thái công nghệ đồng bộ, hiện đại",
+        strengthDesc: "Hạ tầng phần mềm của bạn hầu hết là cloud-based, hỗ trợ API mở, cực kỳ dễ dàng kết nối và nhúng các giải pháp trí tuệ nhân tạo một cách mượt mà.",
+        strengthTips: [
+          "Tìm kiếm các nhà cung cấp phần mềm SaaS có sẵn tích hợp AI sẵn (nhu Base AI) để kích hoạt dùng ngay mà không cần lập trình lại.",
+          "Tận dụng Zapier, Make hoặc Webhook để liên kết dữ liệu thời gian thực giữa các hệ sinh thái."
+        ],
+        weaknessTitle: "Hệ thống công nghệ lỗi thời, phân mảnh",
+        weaknessDesc: "Doanh nghiệp chủ yếu dùng công cụ offline, tệp rời rạc khiến việc đồng bộ dữ liệu thời gian thực trở nên cực kỳ phức tạp và đắt đỏ.",
+        weaknessTips: [
+          "Dịch chuyển các công tác cốt lõi lên nền tảng số hóa SaaS trước khi mơ mộng các công nghệ AI phức tạp.",
+          "Thay thế phần mềm cũ không hỗ trợ API bằng các nền tảng mở."
+        ]
+      }
+    };
+
+    const defaultAdvice = {
+      strengthTitle: "Nguồn lực sẵn sàng đổi mới",
+      strengthDesc: "Doanh nghiệp có cơ chế phản ứng linh hoạt trước sự tiến bộ khoa học công nghệ.",
+      strengthTips: ["Duy trì mức độ cải tiến.", "Khuyến khích nhân rộng mô hình tốt."],
+      weaknessTitle: "Khoảng trống vận hành kỹ thuật",
+      weaknessDesc: "Năng lực phối hợp đa giải pháp còn hạn chế cần được sắp xếp tuần tự bài bản.",
+      weaknessTips: ["Tìm hiểu chuẩn hóa bước đi nhỏ.", "Tập trung thắt chặt bảo mật thông tin."]
+    };
+
+    return {
+      highest: {
+        name: highest?.name || "Chiến lược & Lãnh đạo",
+        pct: highest?.pct || 0,
+        advice: adviceByDimension[highest?.name] || defaultAdvice
+      },
+      lowest: {
+        name: lowest?.name || "Dữ liệu & Hạ tầng",
+        pct: lowest?.pct || 0,
+        advice: adviceByDimension[lowest?.name] || defaultAdvice
+      },
+      roadmap: percentageScore < 30 ? [
+        { phase: "Giai đoạn 1: Số hóa & Kiến tạo Dữ liệu Sạch", desc: "Tập trung dọn dẹp tệp dữ liệu hỗn loạn, chuyển đổi file Excel rời rạc lên CRM/ERP tập trung. Không có dữ liệu sạch thì không thể làm AI.", time: "Tháng 01 - Tháng 03" },
+        { phase: "Giai đoạn 2: Đào tạo Nhận thức & Thử nghiệm Quick-Wins", desc: "Huấn luyện nhân viên cách sử dụng ChatGPT/Gemini bồi đắp tác vụ hành chính thường nhật. Triển khai 1 chatbot nội bộ đơn giản giải đáp câu hỏi thường gặp.", time: "Tháng 04 - Tháng 06" },
+        { phase: "Giai đoạn 3: Tự động hóa kết hợp Trí tuệ Nhân tạo", desc: "Kết nối dữ liệu qua APIs, ứng dụng các mô hình ngôn ngữ lớn (LLMs/GenAI) vào bộ phận Chăm sóc khách hàng hoặc Phân tích dữ liệu tự động.", time: "Tháng 07 trở đi" }
+      ] : percentageScore < 60 ? [
+        { phase: "Giai đoạn 1: Chuẩn hóa Quy trình SOP & API hóa Hệ thống", desc: "Số hóa dòng chảy quy trình phê duyệt trực tuyến, cấu hình hệ thống hỗ trợ API. Tạo tiền đề gán các AI Agent vào từng bước công việc.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Triển khai Thử nghiệm Trợ lý AI Chuyên sâu", desc: "Ứng dụng GenAI vào việc tự động soạn thảo email bán hàng, tóm tắt hợp đồng pháp lý, hoặc dịch vụ phản hồi khách hàng tự động.", time: "Tháng 03 - Tháng 05" },
+        { phase: "Giai đoạn 3: Phân tích Dự báo dựa trên Dữ liệu lớn", desc: "Sử dụng Machine Learning phân tích hành vi mua hàng, dự phòng rủi ro tài chính hoặc dự đoán biến động tỷ lệ nghỉ việc.", time: "Tháng 06 trở đi" }
+      ] : [
+        { phase: "Giai đoạn 1: Đồng bộ hóa Dữ liệu quy mô lớn (Data Lake)", desc: "Xây dựng hạ tầng dữ liệu tập trung thông minh, đảm bảo cập nhật thời gian thực từ mọi điểm chạm và ứng dụng cơ chế an toàn thông tin chuyên sâu.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Tự động hóa thông minh (Agentic Workflow)", desc: "Xây dựng các AI Agent tự chủ có khả năng phối hợp đa quy trình, tự động ra quyết định phê duyệt cấp thấp và phản hồi tác vụ phức tạp.", time: "Tháng 03 - Tháng 05" },
+        { phase: "Giai đoạn 3: Sáng kiến Mô hình AI độc quyền", desc: "Phát triển và tinh chỉnh (Fine-tuning) mô hình trí tuệ nhân tạo riêng biệt ứng dụng sâu vào lợi thế kinh doanh cốt lõi của doanh nghiệp.", time: "Tháng 06 trở đi" }
+      ],
+      suggestedUseCases: percentageScore < 50 ? [
+        { title: "🤖 Trợ lý sếp bằng RAG (Chatbot nội bộ)", desc: "Huấn luyện một chatbot chuyên biệt sử dụng văn liệu nội bộ (SOPs, chính sách, hướng dẫn công việc) giúp nhân viên tự tra cứu câu hỏi chuẩn xác, bảo mật." },
+        { title: "✍️ Tự động hóa soạn thảo nội dung (GenAI Content)", desc: "Sử dụng các API AI thế hệ mới để hỗ trợ phòng Marketing & Sales tự sinh các nội dung email cá nhân hóa chăm sóc khách hàng hàng loạt." }
+      ] : [
+        { title: "📊 Phân tích Kinh doanh thông minh (AI Predictive Analytics)", desc: "Liên kết dữ liệu kinh doanh cũ với mô hình học máy để tự động dự đoán doanh thu, phân bổ chỉ tiêu bán hàng và cảnh báo hàng tồn kho tự động." },
+        { title: "⚡ Quy trình phê duyệt tích hợp AI Agent", desc: "Một trợ lý ảo tự động đọc hiểu đề xuất phê duyệt, đối chiếu với ngân sách thực tế và quy định hiện hành, đưa ra kiến nghị Duyệt/Từ chối chính xác cho sếp." }
+      ]
+    };
+  }, [dimensionScores, percentageScore]);
 
   const validateContact = () => {
     const newErrors: Partial<Record<keyof UserData, string>> = {};
@@ -361,6 +501,10 @@ export default function App() {
     return <Home onNavigate={navigate} />;
   }
 
+  if (route === '/tool') {
+    return <BusinessTools onNavigate={navigate} />;
+  }
+
   if (route === '/khao-sat-chuyen-doi-so') {
     return <DigitalTransformationSurvey onNavigate={navigate} />;
   }
@@ -394,6 +538,10 @@ export default function App() {
 
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => navigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => navigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
+              Tool
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
+            </button>
             <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
             <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
             <button onClick={() => { navigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
@@ -839,28 +987,128 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="bg-slate-50 border border-slate-200 rounded-[24px] p-10 sm:p-12 text-center shadow-lg relative overflow-hidden mt-8">
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3C/g%3E%3C/svg%3E")` }} />
-                
-                <h3 className="text-2xl font-extrabold text-slate-900 mb-3 tracking-tight relative">
-                  {userData.name ? `${userData.name.split(' ').pop()}, đã đến lúc doanh nghiệp chuyển đổi AI?` : 'Sẵn sàng kích hoạt chiến lược AI?'}
-                </h3>
-                <p className="text-slate-600 text-sm leading-relaxed max-w-[420px] mx-auto mb-8 relative">
-                  Đội ngũ chuyên gia của chúng tôi có thể giúp bạn xây lộ trình chuyển đổi số với AI phù hợp đặc thù riêng.
-                </p>
+              {/* DETAILED ADVISORY REPORT */}
+              <div className="flex items-center gap-3.5 my-9">
+                <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-accent font-display whitespace-nowrap">
+                  Báo cáo tư vấn & Quy hoạch chiến lược AI chuyên sâu
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-accent/20 to-transparent" />
+              </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center relative">
-                  <a 
-                    href="tel:0877724333"
-                    className="bg-slate-900 text-white px-8 py-4 text-sm font-bold rounded-xl shadow-lg transition-all hover:-translate-y-1 hover:shadow-slate-200 flex items-center justify-center gap-2"
-                  >
-                    <Phone className="w-4 h-4" /> Gọi ngay: 0877724333
-                  </a>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* STRENGTH */}
+                <div className="bg-emerald-50/40 border border-emerald-100/50 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-100/10 rounded-full -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                      <Trophy className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-emerald-900 leading-tight">Điểm tựa dịch chuyển (Sức mạnh cốt lõi)</h4>
+                      <p className="text-[10px] text-emerald-600 uppercase font-mono tracking-wider font-semibold">Core Leverage</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-emerald-100 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="text-xs font-bold text-slate-850 flex items-center justify-between">
+                      <span>{analysisData.highest.name}</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100">{analysisData.highest.pct}% hoàn thiện</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">{analysisData.highest.advice.strengthDesc}</p>
+                    <div className="space-y-1.5 pt-2.5 border-t border-slate-100">
+                      <span className="text-[10px] font-black text-emerald-700 uppercase font-mono tracking-wider">Hành động gợi ý chuyển nhượng:</span>
+                      {analysisData.highest.advice.strengthTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed">
+                          <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
+                          <span>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* WEAKNESS */}
+                <div className="bg-rose-50/40 border border-rose-100/50 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-rose-100/10 rounded-full -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-500 shrink-0">
+                      <AlertCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-rose-900 leading-tight">Rào cản bứt phá (Lỗ hổng ưu tiên khắc phục)</h4>
+                      <p className="text-[10px] text-rose-600 uppercase font-mono tracking-wider font-semibold">Critical Gaps</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-rose-100 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="text-xs font-bold text-slate-850 flex items-center justify-between">
+                      <span>{analysisData.lowest.name}</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-rose-50 text-rose-700 rounded border border-rose-100">{analysisData.lowest.pct}% hoàn thiện</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">{analysisData.lowest.advice.weaknessDesc}</p>
+                    <div className="space-y-1.5 pt-2.5 border-t border-slate-100">
+                      <span className="text-[10px] font-black text-rose-600 uppercase font-mono tracking-wider">Giải pháp lấp khoảng trống:</span>
+                      {analysisData.lowest.advice.weaknessTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed">
+                          <span className="text-rose-500 font-bold shrink-0 mt-0.5">!</span>
+                          <span>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ROADMAP FOR AI IN APP.TSX */}
+              <div className="bg-white border border-slate-200 rounded-[20px] p-6 mb-8 shadow-xs">
+                <h4 className="text-sm font-extrabold text-indigo-950 mb-5 flex items-center gap-2">
+                  <Map className="w-4 h-4 text-accent" /> Lộ trình 3 Giai đoạn Kích hoạt AI tối ưu
+                </h4>
+                <div className="relative border-l border-indigo-100 pl-6 ml-3 space-y-6">
+                  {analysisData.roadmap.map((step, idx) => (
+                    <div key={idx} className="relative">
+                      <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-accent border-4 border-white shadow-sm flex items-center justify-center animate-pulse" />
+                      <div className="text-[10px] font-bold text-accent uppercase tracking-wider font-mono">{step.time}</div>
+                      <h5 className="text-xs font-extrabold text-slate-850 mt-1">{step.phase}</h5>
+                      <p className="text-xs text-slate-650 mt-1.5 leading-relaxed">{step.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* RECOMMENDED PILOT CASES */}
+              <div className="bg-slate-50 border border-slate-150 rounded-[20px] p-6 mb-8 shadow-xs">
+                <h4 className="text-sm font-extrabold text-slate-900 mb-4 flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-indigo-500 shrink-0" /> Mô hình / Bài toán AI thí điểm gợi ý hành động ngay
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {analysisData.suggestedUseCases.map((uc, idx) => (
+                    <div key={idx} className="bg-white border border-slate-200/60 p-4 rounded-xl shadow-2xs">
+                      <h5 className="text-xs font-extrabold text-indigo-950 flex items-center gap-2 mb-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500 block shrink-0" /> {uc.title}
+                      </h5>
+                      <p className="text-xs text-slate-500 leading-relaxed">{uc.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6 text-center flex flex-col sm:flex-row items-center justify-between gap-4 mt-12">
+                <div className="text-left">
+                  <h4 className="font-bold text-slate-900 text-sm font-sans">Bạn cần tư vấn chi tiết hơn về lộ trình chuyển đổi AI?</h4>
+                  <p className="text-xs text-slate-500 font-sans">Chuyên gia Base.vn hỗ trợ tư vấn khảo sát cụm doanh nghiệp hoàn toàn miễn phí.</p>
+                </div>
+                <div className="flex gap-3 w-full sm:w-auto">
                   <button 
                     onClick={handleRestart}
-                    className="bg-white border-1.5 border-slate-200 text-slate-600 px-7 py-3.5 text-sm font-semibold rounded-xl transition-all hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    className="flex-1 sm:flex-initial bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold px-4 py-2.5 rounded-lg transition-all cursor-pointer font-sans"
                   >
-                    <RefreshCcw className="w-4 h-4" /> Làm lại khảo sát
+                    Làm lại khảo sát
+                  </button>
+                  <button 
+                    onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-ai', '_blank', 'noopener,noreferrer')}
+                    className="flex-1 sm:flex-initial bg-gradient-to-r from-accent to-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all shadow-md cursor-pointer hover:opacity-90 border-none font-sans"
+                  >
+                    Tư vấn giải pháp
                   </button>
                 </div>
               </div>

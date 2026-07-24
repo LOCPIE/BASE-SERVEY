@@ -128,7 +128,11 @@ export default function Home({ onNavigate }: HomeProps) {
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#" className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors">Trang chủ</a>
+            <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => onNavigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
+              Tool
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
+            </button>
             <a href="#benefits" className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors">Doanh nghiệp nhận được gì?</a>
             <a href="#process" className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors">Quy trình</a>
             <a href="#stats" className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors">Thống kê</a>
@@ -170,7 +174,7 @@ export default function Home({ onNavigate }: HomeProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-5"
+                className="font-roboto text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-5"
               >
                 Khám phá mức độ trưởng thành của doanh nghiệp qua <span className="text-gradient">các bài đánh giá chuyên sâu</span>
               </motion.h1>

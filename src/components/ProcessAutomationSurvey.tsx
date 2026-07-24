@@ -276,6 +276,120 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
     }
   }, [percentageScore]);
 
+  const analysisData = useMemo(() => {
+    // Determine highest and lowest dimensions
+    const dimensionPercentages = Object.entries(DIMENSIONS_AUTOMATION).map(([name, cfg]) => {
+      const score = dimensionScores[name] || 0;
+      const pct = Math.round((score / cfg.max) * 100);
+      return { name, score, max: cfg.max, pct };
+    });
+
+    const sorted = [...dimensionPercentages].sort((a, b) => b.pct - a.pct);
+    const highest = sorted[0];
+    const lowest = sorted[sorted.length - 1];
+
+    const adviceByDimension: Record<string, {
+      strengthTitle: string;
+      strengthDesc: string;
+      strengthTips: string[];
+      weaknessTitle: string;
+      weaknessDesc: string;
+      weaknessTips: string[];
+    }> = {
+      "Quy trình cốt lõi": {
+        strengthTitle: "Quy trình SOP chuẩn hóa & Ghi nhận tốt",
+        strengthDesc: "Doanh nghiệp sở hữu hệ thống quy trình phối hợp giữa các phòng ban rõ ràng, được vẽ sơ đồ và quy định cụ thể giúp chất lượng vận hành ổn định.",
+        strengthTips: [
+          "Dùng phần mềm Workflow để thiết lập luồng phối hợp số hóa khép kín.",
+          "Chuẩn hóa bộ thang đo hiệu suất quy trình (KPI/SLA) để kiểm soát chất lượng bàn giao."
+        ],
+        weaknessTitle: "Vận hành rời rạc & Phụ thuộc cá nhân",
+        weaknessDesc: "Hệ thống quy trình mang tính truyền miệng, chưa đóng gói thành tài liệu chuẩn. Khi nhân sự cũ nghỉ, nhân viên mới loay hoay tự mò mẫm gây gián đoạn vận hành nghiêm trọng.",
+        weaknessTips: [
+          "Bắt đầu sơ đồ hóa 3 quy trình xương sống liên quan đến khách hàng trước.",
+          "Soạn thảo cẩm nang chuẩn (SOP) đóng gói tài nguyên chuyên môn nội bộ."
+        ]
+      },
+      "Phê duyệt & Đơn từ": {
+        strengthTitle: "Số hóa phê duyệt đơn từ trực tuyến",
+        strengthDesc: "Thời gian chờ đề xuất phê duyệt được rút ngắn tối đa nhờ chuyển dịch thành biểu mẫu điện tử hỗ trợ phê duyệt qua thiết bị di động (Mobile App).",
+        strengthTips: [
+          "Cấu hình tính năng ký số tự động tích hợp ngay sau chặng phê duyệt hoàn tất.",
+          "Cấu hình các điều kiện phân loại duyệt để tối thiểu hóa các cấp ký phê duyệt không thực cần."
+        ],
+        weaknessTitle: "Nghẽn cổ chai phê duyệt đơn từ giấy",
+        weaknessDesc: "Đơn từ gửi duyệt liên tục thất lạc hoặc dập dình chờ sếp ký tay, tốn nhiều chi phí in ấn hành chính và làm chậm trễ cơ hội kinh doanh.",
+        weaknessTips: [
+          "Triển khai nền tảng Base Request hoặc ứng dụng duyệt số tự phục vụ.",
+          "Ban hành quy chế hạn duyệt tối đa 24h đối với mỗi cấp quản lý."
+        ]
+      },
+      "Quản lý Công việc & Dự án": {
+        strengthTitle: "Quản lý công việc logic khoa học",
+        strengthDesc: "Lãnh đạo kiểm soát tốt trạng thái tiến độ dự án, nhân viên nắm công việc hằng ngày rõ trách nhiệm, deadline và có sự tương tác liền mạch.",
+        strengthTips: [
+          "Áp dụng quy chuẩn Kanban, Gantt Chart để trực quan hóa điểm nghẽn nguồn lực.",
+          "Họp giao ban trực tuyến nhanh hằng tuần dưa trên dashboards tiến độ báo cáo thực tế."
+        ],
+        weaknessTitle: "Quản lý việc theo lối mòn nhóm chat",
+        weaknessDesc: "Giao việc chủ yếu thông qua chat (Zalo, Viber, Telegram), công việc thường xuyên bị trôi mất, hạn định chậm trễ và khó khăn khi tổng kết báo cáo hiệu suất.",
+        weaknessTips: [
+          "Thành lập không gian làm việc số tập trung bám sát tiến độ dạng thẻ việc rõ sệt.",
+          "Thiết lập quy chế giao nhận việc: Mọi đầu việc bắt buộc phải có Deadline và Người nhận phụ trách chính xác."
+        ]
+      },
+      "Hệ thống & Liên thông": {
+        strengthTitle: "Hệ sinh thái kết nối thời gian thực thông suốt",
+        strengthDesc: "Các công cụ từ CRM, kế toán đến quản trị nhân văn kết nối linh động qua API mở giúp hạn chế tối đa hoạt động nhập liệu tay trùng lặp.",
+        strengthTips: [
+          "Ứng dụng RPA để tự động hóa trích lý và chuyển tiếp báo cáo tài chính nội bộ.",
+          "Thử nghiệm tích hợp hệ thống phê duyệt tự động với hệ thống ERP kho bãi."
+        ],
+        weaknessTitle: "Ốc đảo thông tin phân mảnh rườm rà",
+        weaknessDesc: "Các phần mềm hoạt động đơn lẻ, biệt lập khiến nhân viên nòng cốt bận rộn tải file Excel, dọn dẹp và nhập tay lại nhiều lần gây thao tác lỗi.",
+        weaknessTips: [
+          "Lựa chọn các nền tảng SaaS có hệ sinh thái mở hỗ trợ Zapier/API làm trục trung gian.",
+          "Quy hoạch thống nhất bộ từ khóa dữ liệu chuẩn (Master Data) chung giữa các phòng."
+        ]
+      }
+    };
+
+    const defaultAdvice = {
+      strengthTitle: "Dòng chảy vận hành tương thích",
+      strengthDesc: "Hạ tầng có liên kết tương đối tốt để triển khai nâng cấp tự động hóa sâu.",
+      strengthTips: ["Áp dụng số hóa các chặng chính.", "Tuyển dụng nhân tài làm chủ kỹ thuật."],
+      weaknessTitle: "Thất thoát thông tin đáng kể",
+      weaknessDesc: "Quá trình giao tiếp có nhiều gãy đổ, gây mất thời gian xử lý sự cố.",
+      weaknessTips: ["Xác lập đầu lọc biểu mẫu chung.", "Sắp đặt cấu trúc lưu trữ tập trung."]
+    };
+
+    return {
+      highest: {
+        name: highest?.name || "Quy trình cốt lõi",
+        pct: highest?.pct || 0,
+        advice: adviceByDimension[highest?.name] || defaultAdvice
+      },
+      lowest: {
+        name: lowest?.name || "Hệ thống & Liên thông",
+        pct: lowest?.pct || 0,
+        advice: adviceByDimension[lowest?.name] || defaultAdvice
+      },
+      roadmap: percentageScore < 30 ? [
+        { phase: "Giai đoạn 1: Chuẩn hóa SOP & Quản lý Thẻ Công việc", desc: "Tập thuật hệ thống văn bản hóa quy định dòng chảy phối hợp, chuyển đổi hoạt động giao việc từ chat sang nền tảng Task Management (Kanban) rõ deadline.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Số hóa Đề xuất Phê duyệt trực tuyến", desc: "Đưa các biểu mẫu đề xuất nghỉ phép, xin mua hàng, tạm ứng lên công cụ đề xuất trực tuyến duyệt qua điện thoại nhằm giải phóng điểm nghẽn sếp duyệt.", time: "Tháng 03 - Tháng 04" },
+        { phase: "Giai đoạn 3: Phối hợp Liên phòng ban (Cross-department Workflow)", desc: "Xâu chuỗi ghép các đơn từ phê duyệt với tiến trình thực thi, chuyển đổi hoàn toàn phương thức bàn giao thủ tục giấy tờ.", time: "Tháng 05 trở đi" }
+      ] : percentageScore < 60 ? [
+        { phase: "Giai đoạn 1: Liên kết Hệ thống & Đồng bộ Dữ liệu", desc: "Cài đặt tích hợp tự động qua webhook/APIs kết nối thông suốt giữa CRM và hệ thống phê duyệt kế toán.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Triển khai Căn chỉnh SLA & Cảnh báo quá hạn", desc: "Cài đặt luật trễ hạn (Escalation Rules) tự động cảnh báo và chuyển cấp xử lý để đảm bảo không một công việc hay khiếu nại nào bị bỏ rơi quá 48h.", time: "Tháng 03 - Tháng 05" },
+        { phase: "Giai đoạn 3: Robot tự động hóa tác vụ lặp (RPA Integration)", desc: "Sử dụng bot phần mềm thực hiện việc truy xuất ngân hàng, xuất hóa đơn tài chính tự động không cần kế toán thao tác tay thủ công.", time: "Tháng 06 trở đi" }
+      ] : [
+        { phase: "Giai đoạn 1: Khai phá Quy trình chuẩn (Process Mining)", desc: "Chạy phân tích nhật ký hoạt động hệ thống phần mềm (Event log) để tìm ra khoảng nghẽn vô hình và tối ưu hóa luồng chuỗi cung ứng.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Trợ lý AI điều động công việc tự động (AI Agentic Workflow)", desc: "Ứng dụng AI để dự đoán khả năng hoàn thành dự án, tự động phân phối và nhắc việc thông minh cho nhân sự dựa trên độ bận hằng ngày.", time: "Tháng 03 - Tháng 05" },
+        { phase: "Giai đoạn 3: Kiến tạo Văn hóa Tự vận hành số hoàn chỉnh", desc: "Thiết lập trung tâm ưu việt COE tự động hóa tinh gọn để mở rộng quy mô kinh doanh sang các chi nhánh mới nhanh chóng.", time: "Tháng 06 trở đi" }
+      ]
+    };
+  }, [dimensionScores, percentageScore]);
+
   const validateContact = () => {
     const newErrors: Partial<Record<keyof UserData, string>> = {};
     if (!userData.name.trim()) {
@@ -428,6 +542,10 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
 
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-800 hover:text-cyan-600 transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => onNavigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-cyan-600 transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
+              Tool
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
+            </button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-cyan-600 transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-cyan-600 transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-cyan-600 transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
@@ -851,7 +969,7 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
                 <div className="flex-1 h-px bg-gradient-to-r from-cyan-500/20 to-transparent" />
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 text-left">
                 {resultData.recos.map((reco, idx) => (
                   <motion.div
                     key={idx}
@@ -881,36 +999,112 @@ export default function ProcessAutomationSurvey({ onNavigate }: ProcessAutomatio
                 ))}
               </div>
 
-              {/* Call to Action */}
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-[24px] p-8 sm:p-12 text-center relative overflow-hidden mt-12 shadow-xl">
-                <div className="absolute top-[20%] right-[-50px] w-60 h-60 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="relative z-10 space-y-6">
-                  <div className="inline-flex items-center gap-2 bg-cyan-500/20 text-cyan-300 text-[10px] uppercase tracking-wider font-bold px-3.5 py-1.5 rounded-full font-display">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Tối ưu hóa vận hành cùng Base.vn
+              {/* BÁO CÁO TƯ VẤN TỰ ĐỘNG HÓA QUY TRÌNH CHUYÊN SÂU */}
+              <div className="flex items-center gap-3.5 my-9">
+                <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-cyan-600 font-display whitespace-nowrap">
+                  Báo cáo tư vấn & Bản đồ Tự động hóa vận hành chuyên sâu
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-cyan-500/20 to-transparent" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left">
+                {/* STRENGTH */}
+                <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-100/10 rounded-full -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                      <Trophy className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-emerald-900 leading-tight">Điểm tựa dịch chuyển (Sức mạnh vận hành)</h4>
+                      <p className="text-[10px] text-emerald-600 uppercase font-mono tracking-wider font-semibold">Core Leverage</p>
+                    </div>
                   </div>
-
-                  <h3 className="text-xl sm:text-3.5xl font-extrabold leading-tight tracking-tight max-w-[650px] mx-auto text-white">
-                    Tăng Tốc Vận Hành Doanh Nghiệp Của Bạn Ngay Hôm Nay
-                  </h3>
-
-                  <p className="text-slate-400 text-xs sm:text-sm max-w-[500px] mx-auto leading-relaxed">
-                    Hơn 9000+ doanh nghiệp hàng đầu tại Việt Nam đang tối ưu hóa luồng công việc, phê duyệt tự động và kết nối hoàn chỉnh trên nền tảng Base.vn.
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto pt-4">
-                    <button 
-                      onClick={handleRestart}
-                      className="py-3.5 px-6 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-850 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <RefreshCcw className="w-4 h-4" /> Khảo sát lại
-                    </button>
-                    <button 
-                      onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey', '_blank', 'noopener,noreferrer')}
-                      className="py-3.5 px-7 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-sm shadow-xl shadow-cyan-500/15 hover:shadow-2xl transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 border-none cursor-pointer"
-                    >
-                      Tư vấn & Trải nghiệm giải pháp <ChevronRight className="w-4 h-4" />
-                    </button>
+                  <div className="bg-white border border-emerald-100 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="text-xs font-bold text-slate-850 flex items-center justify-between">
+                      <span className="font-sans">{analysisData.highest.name}</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-mono">{analysisData.highest.pct}% hoàn thiện</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans">{analysisData.highest.advice.strengthDesc}</p>
+                    <div className="space-y-1.5 pt-2.5 border-t border-slate-100">
+                      <span className="text-[10px] font-black text-emerald-700 uppercase font-mono tracking-wider">Hành động củng cố & duy trì hiệu suất:</span>
+                      {analysisData.highest.advice.strengthTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed font-sans">
+                          <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
+                          <span>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                </div>
+
+                {/* WEAKNESS */}
+                <div className="bg-rose-50/40 border border-rose-100 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-rose-100/10 rounded-full -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-500 shrink-0">
+                      <AlertCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-rose-950 leading-tight">Điểm nghẽn thâm hụt (Lỗ hổng rủi ro cao)</h4>
+                      <p className="text-[10px] text-rose-600 uppercase font-mono tracking-wider font-semibold">Critical Gaps</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-rose-100 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="text-xs font-bold text-slate-850 flex items-center justify-between">
+                      <span className="font-sans">{analysisData.lowest.name}</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-rose-50 text-rose-700 rounded border border-rose-100 font-mono">{analysisData.lowest.pct}% hoàn thiện</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans">{analysisData.lowest.advice.weaknessDesc}</p>
+                    <div className="space-y-1.5 pt-2.5 border-t border-rose-100">
+                      <span className="text-[10px] font-black text-rose-600 uppercase font-mono tracking-wider">Hành trình tháo dỡ rào cản:</span>
+                      {analysisData.lowest.advice.weaknessTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed font-sans">
+                          <span className="text-rose-500 font-bold shrink-0 mt-0.5">!</span>
+                          <span>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ROADMAP FOR AUTOMATION */}
+              <div className="bg-white border border-slate-200 rounded-[20px] p-6 mb-8 text-left shadow-xs">
+                <h4 className="text-sm font-extrabold text-slate-900 mb-5 flex items-center gap-2 font-sans">
+                  <Map className="w-4 h-4 text-cyan-600" /> Bản đồ Tự động hóa dòng vận hành tổ chức (Process Automation Roadmap)
+                </h4>
+                <div className="relative border-l border-cyan-500 pl-6 ml-3 space-y-6">
+                  {analysisData.roadmap.map((step, idx) => (
+                    <div key={idx} className="relative">
+                      <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-cyan-500 border-4 border-white shadow-sm flex items-center justify-center animate-pulse" />
+                      <div className="text-[10px] font-extrabold text-cyan-600 uppercase tracking-wider font-mono">{step.time}</div>
+                      <h5 className="text-xs font-extrabold text-slate-900 mt-1 font-sans">{step.phase}</h5>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed font-sans">{step.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6 text-center flex flex-col sm:flex-row items-center justify-between gap-4 mt-12">
+                <div className="text-left">
+                  <h4 className="font-bold text-slate-900 text-sm">Bạn cần tư vấn chi tiết hơn về lộ trình Tự động hóa quy trình?</h4>
+                  <p className="text-xs text-slate-500">Chuyên gia Base.vn hỗ trợ tư vấn khảo sát cụm doanh nghiệp hoàn toàn miễn phí.</p>
+                </div>
+                <div className="flex gap-3 w-full sm:w-auto">
+                  <button 
+                    onClick={handleRestart}
+                    className="flex-1 sm:flex-initial bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold px-4 py-2.5 rounded-lg transition-all cursor-pointer font-sans"
+                  >
+                    Làm lại khảo sát
+                  </button>
+                  <button 
+                    onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-automation', '_blank', 'noopener,noreferrer')}
+                    className="flex-1 sm:flex-initial bg-gradient-to-r from-cyan-600 to-blue-550 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all shadow-md cursor-pointer hover:opacity-90 border-none font-sans"
+                  >
+                    Tư vấn giải pháp
+                  </button>
                 </div>
               </div>
 

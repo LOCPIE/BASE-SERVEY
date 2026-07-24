@@ -263,6 +263,134 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
     }
   }, [percentageScore]);
 
+  const analysisData = useMemo(() => {
+    // Determine highest and lowest dimensions
+    const dimensionPercentages = Object.entries(DIMENSIONS_HR).map(([name, cfg]) => {
+      const score = dimensionScores[name] || 0;
+      const pct = Math.round((score / cfg.max) * 100);
+      return { name, score, max: cfg.max, pct };
+    });
+
+    const sorted = [...dimensionPercentages].sort((a, b) => b.pct - a.pct);
+    const highest = sorted[0];
+    const lowest = sorted[sorted.length - 1];
+
+    const adviceByDimension: Record<string, {
+      strengthTitle: string;
+      strengthDesc: string;
+      strengthTips: string[];
+      weaknessTitle: string;
+      weaknessDesc: string;
+      weaknessTips: string[];
+    }> = {
+      "Hồ sơ & Vận hành": {
+        strengthTitle: "Thông tin hồ sơ & Vận hành nhân sự ổn định",
+        strengthDesc: "Doanh nghiệp quản lý hồ sơ nhân viên quy chuẩn, thông tin hợp đồng đầy đủ và các thủ tục hành chính ngày được thực hiện chính xác.",
+        strengthTips: [
+          "Mở rộng thông tin thành dạng số hóa lưu trữ tập trung tự động cập nhật.",
+          "Chuẩn bị liên kết cơ sở dữ liệu hồ sơ với hệ thống chấm công tính lương để tối ưu hóa việc trả lương."
+        ],
+        weaknessTitle: "Vận hành thủ công phân tán dữ liệu",
+        weaknessDesc: "Hồ sơ nhân viên đa phần lưu trữ trên file cứng hoặc Excel cá nhân gây tốn thời gian tra cứu, dễ thất lạc và rủi ro rò rỉ thông tin cao.",
+        weaknessTips: [
+          "Đưa 100% hồ sơ lên nền tảng quản lý Core HR điện tử.",
+          "Quy định cập nhật hồ sơ trực tiếp từ nhân viên qua cổng tự phục vụ."
+        ]
+      },
+      "Tuyển dụng & Đào tạo": {
+        strengthTitle: "Quy trình tuyển mộ tuyển dụng hiệu quả",
+        strengthDesc: "Có kênh tuyển dụng mạch lạc, Talent Pool chất lượng và quy trình đào tạo hội nhập bài bản cho nhân viên mới.",
+        strengthTips: [
+          "Ứng dụng hệ thống ATS chuyên dụng để xây dựng nguồn hồ sơ độc quyền dài hạn.",
+          "Thiết lập thang đo hiệu suất nguồn tuyển dụng để tối ưu chi phí quảng cáo tuyển."
+        ],
+        weaknessTitle: "Tuyển đào tạo thủ công đơn lẻ",
+        weaknessDesc: "Chưa quy chuẩn Talent Pool, quy trình onboarding mang tính cảm tính, thiếu tài liệu huấn luyện trung tâm khiến tỷ lệ nhân sự thử việc nghỉ việc cao.",
+        weaknessTips: [
+          "Văn bản hóa cẩm nang Onboarding hội nhập nhân sự 30-60-90 ngày đầu tiên.",
+          "Sử dụng công cụ theo dõi quy trình ứng viên trực tuyến, tránh thất lạc ứng viên tài năng."
+        ]
+      },
+      "Hiệu suất & Gắn kết": {
+        strengthTitle: "Cam kết gắn kết hiệu suất nòng cốt tốt",
+        strengthDesc: "Hệ thống đánh giá hiệu quản lượng hóa rõ ràng, nhân viên thấu hiểu sứ mệnh chung và có động lực phấn đấu cao.",
+        strengthTips: [
+          "Mở rộng khảo sát eNPS định kỳ để đánh giá sức khỏe tinh thần tổ chức.",
+          "Liên thông kết quả đánh giá KPI/OKRs với cơ chế thăng tiến và bổ nhiệm nhân tài."
+        ],
+        weaknessTitle: "Đánh giá cảm tính & Thiếu gắn kết",
+        weaknessDesc: "Đánh giá hiệu suất cuối kỳ mang nặng tính chủ quan, thiếu chỉ số đo lường KPIs/OKRs cụ thể, không tạo được động lực cho nhân sự cống hiến.",
+        weaknessTips: [
+          "Xây dựng bộ chỉ số đánh giá KPIs/OKRs rõ ràng cho từng vị trí và truyền thông minh bạch.",
+          "Tổ chức các buổi đối thoại định kỳ 1-1 giữa quản lý và nhân sự để tháo gỡ điểm nghẽn."
+        ]
+      },
+      "Trải nghiệm số Nhân viên": {
+        strengthTitle: "Trải nghiệm tiện ích tự phục vụ xuất sắc",
+        strengthDesc: "Nhân viên tự gửi đơn phép, tra công, nhận bảng lương trực tuyến qua Mobile App mà không cần kiến nghị trực tiếp bộ phận HR.",
+        strengthTips: [
+          "Cấu hình các quy định duyệt thông minh để phê duyệt tự động giảm thời gian chờ.",
+          "Tích hợp ký số điện tử để hoàn thiện trải nghiệm không giấy tờ (Paperless office)."
+        ],
+        weaknessTitle: "Trải nghiệm rườm rà, thủ tục giấy tờ nhiều",
+        weaknessDesc: "Mọi việc từ xin nghỉ phép, xin tạm ứng đến thắc mắc tiền lương đều phải thực hiện bằng đơn giấy, ký duyệt qua nhiều cấp sếp thủ công, gây ức chế cho nhân viên.",
+        weaknessTips: [
+          "Triển khai Mobile App tự phục vụ để nhân viên tra cứu công lương, duyệt đơn phép thời gian thực.",
+          "Loại bỏ các văn bản in ấn hành chính không cần thiết."
+        ]
+      },
+      "Chiến lược & Phân tích": {
+        strengthTitle: "Phân tích dữ liệu nhân sự chiến lược (HR Analytics)",
+        strengthDesc: "Ban quản lý đưa ra quyết định nhân sự dựa trên trực quan biểu đồ, dự báo tỷ lệ biến động nhân sự và dòng chảy nguồn lực một cách tối ưu.",
+        strengthTips: [
+          "Ứng dụng phân tích dự báo nâng cao bằng mô hình toán để dự báo chi phí nhân sự hằng năm.",
+          "Đồng bộ dữ liệu nhân sự với hiệu suất kinh doanh (Sales Performance) để đo lường ROI nhân sự."
+        ],
+        weaknessTitle: "Thiếu dữ liệu nhân sự hỗ trợ quyết định sếp",
+        weaknessDesc: "Không có số liệu báo cáo nhân sự tổng thể, lãnh đạo tuyển dụng hay phân bổ ngân sách lương dựa trên phán đoán cảm tính, dẫn tới lãng phí tài chính.",
+        weaknessTips: [
+          "Bắt đầu xây dựng hệ thống báo cáo số lượng biến động nhân sự thường nguyệt tự động.",
+          "Tính toán chỉ số chi phí nhân sự trên doanh thu làm cơ sở định cấu trúc lương thưởng."
+        ]
+      }
+    };
+
+    const defaultAdvice = {
+      strengthTitle: "Quản trị cơ hữu ổn định",
+      strengthDesc: "Doanh nghiệp có nền tảng vững để nâng cấp chuyên sâu nâng tầm năng lực con người.",
+      strengthTips: ["Tiếp tục cải tiến quy trình.", "Đào tạo nhân lực nòng cốt."],
+      weaknessTitle: "Khoảng trống số hóa cơ bản",
+      weaknessDesc: "Còn tồn đọng nhiều thủ tục thủ công gây thắt cổ chai dòng thông tin.",
+      weaknessTips: ["Tiến hành dọn dẹp phân cấp quản lý.", "Áp dụng phần mềm cốt lõi dùng ngay."]
+    };
+
+    return {
+      highest: {
+        name: highest?.name || "Hồ sơ & Vận hành",
+        pct: highest?.pct || 0,
+        advice: adviceByDimension[highest?.name] || defaultAdvice
+      },
+      lowest: {
+        name: lowest?.name || "Chiến lược & Phân tích",
+        pct: lowest?.pct || 0,
+        advice: adviceByDimension[lowest?.name] || defaultAdvice
+      },
+      roadmap: percentageScore < 30 ? [
+        { phase: "Giai đoạn 1: Chuẩn hóa Thông tin & Core HR Tập trung", desc: "Đưa toàn bộ hồ sơ nhân sự từ Excel/giấy lên phần mềm quản lý Core HR đám mây. Đồng bộ danh bạ toàn tổ chức.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Tự động hóa Chấm công & Tự phục vụ đơn từ", desc: "Triển khai chấm công di động/GPS tích hợp duyệt đơn xin nghỉ phép, đi muộn trực tiếp trên Mobile App. Nhân viên tra công tự động hằng ngày.", time: "Tháng 03 - Tháng 04" },
+        { phase: "Giai đoạn 3: Kết toán công lương thông suốt", desc: "Liên kết dữ liệu chấm công và phép tự động đổ về bảng lương cuối tháng, giảm tải 90% công sức tính tay của phòng nhân sự.", time: "Tháng 05 trở đi" }
+      ] : percentageScore < 60 ? [
+        { phase: "Giai đoạn 1: Số hóa phễu Tuyển dụng & Onboarding nội bộ", desc: "Sử dụng ATS để thu thập hồ sơ ứng viên đa kênh, tạo hệ thống đánh giá ứng viên chuyên nghiệp và chuẩn hóa tài liệu Onboarding.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Kiến thiết đánh giá Hiệu suất (KPIs/OKRs) trực tuyến", desc: "Đưa chỉ tiêu KPIs, OKRs của từng nhân sự lên hệ thống phần mềm quản lý hiệu suất để theo dõi tiến độ công việc minh bạch.", time: "Tháng 03 - Tháng 05" },
+        { phase: "Giai đoạn 3: Đào tạo & Khung năng lực trực tuyến", desc: "Tích hợp công cụ E-learning để nhân viên tự học tập cải tạo kỹ năng dưa trên lỗ hổng năng lực phát hiện sau kỳ đánh giá.", time: "Tháng 06 trở đi" }
+      ] : [
+        { phase: "Giai đoạn 1: Tối ưu hóa vòng đời trải nghiệm Nhân sự (Employee Lifecycle)", desc: "Xây dựng cổng giao tiếp thông tin, khảo sát ý kiến thường kỳ và cá nhân hóa lộ trình chăm sóc phúc lợi đãi ngộ.", time: "Tháng 01 - Tháng 02" },
+        { phase: "Giai đoạn 2: Tích hợp sâu AI & Dự toán nguồn lực thông minh", desc: "Ứng dụng Trí tuệ nhân tạo (AI Agents) để tự động lọc hồ sơ ứng viên ứng tuyển, dự báo nguy cơ nghỉ việc dựa trên dữ liệu lịch sử.", time: "Tháng 03 - Tháng 05" },
+        { phase: "Giai đoạn 3: Phân tích nguồn nhân lực chiến lược (Predictive HR)", desc: "Quy hoạch tự động Bản đồ 9 ô năng lực nhân tài, lập kế hoạch kế nhiệm sếp dựa trên dữ liệu hiệu quả cống hiến thực.", time: "Tháng 06 trở đi" }
+      ]
+    };
+  }, [dimensionScores, percentageScore]);
+
   const validateContact = () => {
     const newErrors: Partial<Record<keyof UserData, string>> = {};
     if (!userData.name.trim()) {
@@ -415,6 +543,10 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
 
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-800 hover:text-teal-600 transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => onNavigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-teal-600 transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
+              Tool
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
+            </button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-teal-600 transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-teal-600 transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-teal-600 transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
@@ -841,18 +973,105 @@ export default function HRMaturitySurvey({ onNavigate }: HRMaturitySurveyProps) 
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {resultData.recos.map((re, rIdx) => (
-                  <div key={rIdx} className="bg-white border border-slate-150 rounded-2xl p-6 shadow-sm flex flex-col items-start text-left">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: re.bg }}>
+                  <div key={rIdx} className="bg-white border border-slate-150 rounded-2xl p-6 shadow-sm flex flex-col items-start text-left hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 hover:scale-105 transition-transform" style={{ backgroundColor: re.bg }}>
                       {re.ic}
                     </div>
-                    <h3 className="font-bold text-slate-900 leading-snug text-base mb-2">
+                    <h3 className="font-bold text-slate-900 leading-snug text-base mb-2 font-sans">
                       {re.t}
                     </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-500 leading-relaxed font-sans">
                       {re.p}
                     </p>
                   </div>
                 ))}
+              </div>
+
+              {/* BÁO CÁO TƯ VẤN QUẢN TRỊ NHÂN SỰ CHUYÊN SÂU */}
+              <div className="flex items-center gap-3.5 my-9">
+                <span className="text-[11px] font-bold tracking-[0.12em] uppercase text-teal-600 font-display whitespace-nowrap">
+                  Báo cáo tư vấn & Quy hoạch chuyển đổi HRM chuyên sâu
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-teal-500/20 to-transparent" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-left">
+                {/* STRENGTH */}
+                <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-100/10 rounded-full -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-650 shrink-0">
+                      <Trophy className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-emerald-950 leading-tight">Điểm tựa dịch chuyển (Lợi thế quản trị)</h4>
+                      <p className="text-[10px] text-emerald-600 uppercase font-mono tracking-wider font-semibold">Core Leverage</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-emerald-100 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="text-xs font-bold text-slate-850 flex items-center justify-between">
+                      <span className="font-sans">{analysisData.highest.name}</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 font-mono">{analysisData.highest.pct}% hoàn thiện</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans">{analysisData.highest.advice.strengthDesc}</p>
+                    <div className="space-y-1.5 pt-2.5 border-t border-slate-100">
+                      <span className="text-[10px] font-black text-emerald-700 uppercase font-mono tracking-wider">Mô hình kiến nghị tiếp tục tận dụng:</span>
+                      {analysisData.highest.advice.strengthTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed font-sans">
+                          <span className="text-emerald-500 font-bold shrink-0 mt-0.5">✓</span>
+                          <span>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* WEAKNESS */}
+                <div className="bg-rose-50/40 border border-rose-100 rounded-2xl p-6 shadow-xs relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-rose-100/10 rounded-full -mr-6 -mt-6 pointer-events-none" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-rose-500 shrink-0">
+                      <AlertCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold text-rose-950 leading-tight">Khoảng trống rủi ro (Cần cải thiện khẩn cấp)</h4>
+                      <p className="text-[10px] text-rose-600 uppercase font-mono tracking-wider font-semibold">Critical Gaps</p>
+                    </div>
+                  </div>
+                  <div className="bg-white border border-rose-100 rounded-xl p-4 space-y-3 shadow-2xs">
+                    <div className="text-xs font-bold text-slate-850 flex items-center justify-between">
+                      <span className="font-sans">{analysisData.lowest.name}</span>
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-rose-50 text-rose-700 rounded border border-rose-100 font-mono">{analysisData.lowest.pct}% hoàn thiện</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans">{analysisData.lowest.advice.weaknessDesc}</p>
+                    <div className="space-y-1.5 pt-2.5 border-t border-slate-100">
+                      <span className="text-[10px] font-black text-rose-600 uppercase font-mono tracking-wider">Hành trình khắc phục rủi ro:</span>
+                      {analysisData.lowest.advice.weaknessTips.map((tip, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 leading-relaxed font-sans">
+                          <span className="text-rose-500 font-bold shrink-0 mt-0.5">!</span>
+                          <span>{tip}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ROADMAP FOR HRM */}
+              <div className="bg-white border border-slate-200 rounded-[20px] p-6 mb-8 text-left shadow-xs">
+                <h4 className="text-sm font-extrabold text-slate-900 mb-5 flex items-center gap-2 font-sans">
+                  <Map className="w-4 h-4 text-teal-600" /> Bản đồ số hóa quy trình và tổ chức nhân sự (SME HR Roadmap)
+                </h4>
+                <div className="relative border-l border-teal-500 pl-6 ml-3 space-y-6">
+                  {analysisData.roadmap.map((step, idx) => (
+                    <div key={idx} className="relative">
+                      <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-teal-500 border-4 border-white shadow-sm flex items-center justify-center animate-pulse" />
+                      <div className="text-[10px] font-extrabold text-teal-600 uppercase tracking-wider font-mono">{step.time}</div>
+                      <h5 className="text-xs font-extrabold text-slate-900 mt-1 font-sans">{step.phase}</h5>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed font-sans">{step.desc}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Action Buttons */}

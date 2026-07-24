@@ -890,6 +890,10 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
 
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => onNavigate('/')} className="text-sm font-semibold text-slate-800 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Trang chủ</button>
+            <button onClick={() => onNavigate('/tool')} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none flex items-center gap-1.5">
+              Tool
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Free</span>
+            </button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('benefits')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Doanh nghiệp nhận được gì?</button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('process')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Quy trình</button>
             <button onClick={() => { onNavigate('/'); setTimeout(() => { document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }, 150); }} className="text-sm font-semibold text-slate-600 hover:text-accent transition-colors cursor-pointer bg-transparent border-none">Thống kê</button>
@@ -1640,29 +1644,24 @@ export default function DigitalTransformationSurvey({ onNavigate }: SurveyProps)
                 </div>
               </div>
 
-              {/* Consultation CTA banner */}
-              <div className="bg-slate-50 border border-slate-200 rounded-[24px] p-10 sm:p-12 text-center shadow-lg relative overflow-hidden mt-8">
-                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3C/g%3E%3C/svg%3E")` }} />
-                
-                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 mb-3 tracking-tight relative">
-                  {userData.name ? `${userData.name.split(' ').pop()}, sẵn sàng số hóa vận hành thông suốt?` : 'Xây dựng Lộ trình Số hóa Toàn diện?'}
-                </h3>
-                <p className="text-slate-600 text-sm leading-relaxed max-w-[450px] mx-auto mb-8 relative border-b border-dashed border-slate-200 pb-5">
-                  Ban cố vấn điều hành mảng chuyển đổi số của Base.vn sẵn sàng hỗ trợ tư vấn trực tuyến và chuyển giao bộ giải pháp nâng hiệu suất vượt trội cho doanh nghiệp của bạn.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center relative">
-                  <a 
-                    href="tel:0877724333"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 text-sm font-bold rounded-xl shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                  >
-                    <Phone className="w-4 h-4 text-white" /> Hotline tư vấn cố vấn: 0877.724.333
-                  </a>
+              {/* Action Buttons */}
+              <div className="bg-slate-50 border border-slate-200 rounded-[20px] p-6 text-center flex flex-col sm:flex-row items-center justify-between gap-4 mt-12">
+                <div className="text-left">
+                  <h4 className="font-bold text-slate-900 text-sm">Bạn cần tư vấn chi tiết hơn về lộ trình Chuyển đổi số?</h4>
+                  <p className="text-xs text-slate-500">Chuyên gia Base.vn hỗ trợ tư vấn khảo sát cụm doanh nghiệp hoàn toàn miễn phí.</p>
+                </div>
+                <div className="flex gap-3 w-full sm:w-auto">
                   <button 
                     onClick={handleRestart}
-                    className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-7 py-3.5 text-sm font-semibold rounded-xl transition-all hover:border-slate-300 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 sm:flex-initial bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold px-4 py-2.5 rounded-lg transition-all cursor-pointer font-sans"
                   >
-                    <RefreshCcw className="w-4 h-4 text-slate-405" /> Thực hiện lại khảo sát
+                    Làm lại khảo sát
+                  </button>
+                  <button 
+                    onClick={() => window.open('https://base.vn/dang-ky-demo?utm_source=base-survey-dx', '_blank', 'noopener,noreferrer')}
+                    className="flex-1 sm:flex-initial bg-gradient-to-r from-indigo-600 to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all shadow-md cursor-pointer hover:opacity-90 border-none font-sans"
+                  >
+                    Tư vấn giải pháp
                   </button>
                 </div>
               </div>

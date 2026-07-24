@@ -6,6 +6,8 @@
 @theme {
   --font-sans: "Roboto", "Google Sans", "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Roboto", "Google Sans", "Space Grotesk", sans-serif;
+  --font-roboto: "Roboto", "Google Sans", sans-serif;
+  --font-arial: Arial, sans-serif;
 
   --color-bg: #ffffff;
   --color-bg-secondary: #f8fafc;
