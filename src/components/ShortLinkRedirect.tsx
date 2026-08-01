@@ -125,8 +125,36 @@ export default function ShortLinkRedirect({ slug, onNavigate }: ShortLinkRedirec
 
       return () => clearTimeout(timer);
     } else {
-      setNotFound(true);
-      document.title = "Không tìm thấy liên kết | Base.vn";
+      // Try fetching from server API if not found in local storage
+      let isMounted = true;
+      fetch(`/api/links/${encodeURIComponent(cleanSlug)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!isMounted) return;
+          if (data.success && data.link && data.link.originalUrl) {
+            setTargetLink(data.link);
+            document.title = `Chuyển hướng đến ${data.link.title || data.link.shortSlug} | Base.vn`;
+            
+            // Redirect immediately
+            window.location.href = data.link.originalUrl;
+            setTimeout(() => {
+              window.location.replace(data.link.originalUrl);
+            }, 300);
+          } else {
+            setNotFound(true);
+            document.title = "Không tìm thấy liên kết | Base.vn";
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setNotFound(true);
+            document.title = "Không tìm thấy liên kết | Base.vn";
+          }
+        });
+
+      return () => {
+        isMounted = false;
+      };
     }
   }, [slug]);
 

@@ -150,6 +150,36 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
     }
   };
 
+  // Fetch server links on mount to keep links synced across browsers
+  useEffect(() => {
+    const fetchServerLinks = async () => {
+      try {
+        const res = await fetch('/api/links');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.links)) {
+            setLinks(prev => {
+              const combinedMap = new Map<string, ShortenedLink>();
+              // Put server links first
+              data.links.forEach((l: ShortenedLink) => combinedMap.set(l.shortSlug.toLowerCase(), l));
+              // Put local state if not present
+              prev.forEach(l => {
+                if (!combinedMap.has(l.shortSlug.toLowerCase())) {
+                  combinedMap.set(l.shortSlug.toLowerCase(), l);
+                }
+              });
+              return Array.from(combinedMap.values());
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch links from server', err);
+      }
+    };
+
+    fetchServerLinks();
+  }, []);
+
   // Save links to LocalStorage whenever modified
   useEffect(() => {
     try {
@@ -264,7 +294,7 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
 
     setIsGenerating(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const domainOrigin = window.location.origin;
       const fullShortUrl = `${domainOrigin}/s/${finalSlug}`;
 
@@ -286,7 +316,18 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
         title
       };
 
-      setLinks(prev => [newLinkItem, ...prev]);
+      // Save link to server
+      try {
+        await fetch('/api/shorten', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newLinkItem)
+        });
+      } catch (err) {
+        console.error('Failed to post shortened link to server', err);
+      }
+
+      setLinks(prev => [newLinkItem, ...prev.filter(l => l.shortSlug.toLowerCase() !== finalSlug)]);
       setSuccessLink(newLinkItem);
       setLongUrl('');
       setCustomSlug('');
