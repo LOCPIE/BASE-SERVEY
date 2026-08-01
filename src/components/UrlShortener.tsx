@@ -40,6 +40,15 @@ interface UrlShortenerProps {
 
 const DEFAULT_DEMO_LINKS: ShortenedLink[] = [
   {
+    id: 'demo-ebook-ai',
+    originalUrl: 'https://signup.base.vn/ebook-ai-trong-quan-tri-doanh-nghiep/?utm_source=marketing',
+    shortSlug: 'ebook-ai',
+    shortUrl: `${window.location.origin}/s/ebook-ai`,
+    createdAt: new Date().toISOString(),
+    clicks: 12,
+    title: 'Ebook AI trong Quản trị Doanh nghiệp'
+  },
+  {
     id: 'demo-1',
     originalUrl: 'https://base.vn/dang-ky-demo?utm_source=survey&utm_medium=website_tool',
     shortSlug: 'demo-base-ai',
@@ -75,7 +84,9 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          const existingSlugs = new Set(parsed.map((l: ShortenedLink) => l.shortSlug?.toLowerCase()));
+          const missingDefaults = DEFAULT_DEMO_LINKS.filter(d => !existingSlugs.has(d.shortSlug.toLowerCase()));
+          return [...parsed, ...missingDefaults];
         }
       }
     } catch (e) {

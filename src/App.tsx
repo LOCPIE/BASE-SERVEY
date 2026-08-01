@@ -12,6 +12,7 @@ import BusinessTools from './components/BusinessTools';
 import ProjectScoringMatrix from './components/ProjectScoringMatrix';
 import PromptLibrary from './components/PromptLibrary';
 import UrlShortener from './components/UrlShortener';
+import ShortLinkRedirect from './components/ShortLinkRedirect';
 import { 
   Bot, 
   Clock, 
@@ -92,7 +93,23 @@ export default function App() {
   const getRouteFromUrl = () => {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
     const hash = window.location.hash;
-    if (path === '/tool/rut-gon-link' || hash === '#/tool/rut-gon-link' || hash === '#tool/rut-gon-link' || hash === '#rut-gon-link' || hash === '#/rut-gon-link' || path.startsWith('/s/')) return '/tool/rut-gon-link';
+
+    if (path.startsWith('/s/')) {
+      const slug = path.replace(/^\/s\//, '').trim();
+      if (slug) return `/s/${slug}`;
+      return '/tool/rut-gon-link';
+    }
+
+    if (hash.includes('/s/') || hash.includes('#s/')) {
+      const cleanHash = hash.replace(/^#\/?/, '');
+      if (cleanHash.startsWith('s/')) {
+        const slug = cleanHash.replace(/^s\//, '').trim();
+        if (slug) return `/s/${slug}`;
+        return '/tool/rut-gon-link';
+      }
+    }
+
+    if (path === '/tool/rut-gon-link' || hash === '#/tool/rut-gon-link' || hash === '#tool/rut-gon-link' || hash === '#rut-gon-link' || hash === '#/rut-gon-link') return '/tool/rut-gon-link';
     if (path === '/tool/danh-gia-va-xep-hang-du-an' || hash === '#/tool/danh-gia-va-xep-hang-du-an' || hash === '#tool/danh-gia-va-xep-hang-du-an') return '/tool/danh-gia-va-xep-hang-du-an';
     if (hash === '#prompt-library' || hash === '#/prompt-library' || path === '/prompt-library' || hash === '#tool-prompt' || hash === '#/tool-prompt' || path === '/tool-prompt') return '/prompt-library';
     if (hash === '#tool' || hash === '#/tool' || path === '/tool') return '/tool';
@@ -505,6 +522,11 @@ export default function App() {
 
   if (route === '/tool') {
     return <BusinessTools onNavigate={navigate} />;
+  }
+
+  if (route.startsWith('/s/')) {
+    const slug = route.replace(/^\/s\//, '');
+    return <ShortLinkRedirect slug={slug} onNavigate={navigate} />;
   }
 
   if (route === '/tool/rut-gon-link') {
