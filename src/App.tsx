@@ -11,6 +11,7 @@ import ProcessAutomationSurvey from './components/ProcessAutomationSurvey';
 import BusinessTools from './components/BusinessTools';
 import ProjectScoringMatrix from './components/ProjectScoringMatrix';
 import PromptLibrary from './components/PromptLibrary';
+import UrlShortener from './components/UrlShortener';
 import { 
   Bot, 
   Clock, 
@@ -91,6 +92,7 @@ export default function App() {
   const getRouteFromUrl = () => {
     const path = window.location.pathname.replace(/\/$/, '') || '/';
     const hash = window.location.hash;
+    if (path === '/tool/rut-gon-link' || hash === '#/tool/rut-gon-link' || hash === '#tool/rut-gon-link' || hash === '#rut-gon-link' || hash === '#/rut-gon-link' || path.startsWith('/s/')) return '/tool/rut-gon-link';
     if (path === '/tool/danh-gia-va-xep-hang-du-an' || hash === '#/tool/danh-gia-va-xep-hang-du-an' || hash === '#tool/danh-gia-va-xep-hang-du-an') return '/tool/danh-gia-va-xep-hang-du-an';
     if (hash === '#prompt-library' || hash === '#/prompt-library' || path === '/prompt-library' || hash === '#tool-prompt' || hash === '#/tool-prompt' || path === '/tool-prompt') return '/prompt-library';
     if (hash === '#tool' || hash === '#/tool' || path === '/tool') return '/tool';
@@ -137,7 +139,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (route === '/prompt-library' || route === '/tool-prompt') {
+    if (route === '/tool/rut-gon-link') {
+      document.title = "URL Shortener - Rút gọn link chuyên nghiệp | Base.vn";
+    } else if (route === '/prompt-library' || route === '/tool-prompt') {
       document.title = "Prompt Library - Thư viện Prompt cho doanh nghiệp";
     } else {
       document.title = "Base.vn - Nền tảng Chuyển đổi số & Quản trị Doanh nghiệp";
@@ -501,6 +505,10 @@ export default function App() {
 
   if (route === '/tool') {
     return <BusinessTools onNavigate={navigate} />;
+  }
+
+  if (route === '/tool/rut-gon-link') {
+    return <UrlShortener onNavigate={navigate} />;
   }
 
   if (route === '/prompt-library' || route === '/tool-prompt') {

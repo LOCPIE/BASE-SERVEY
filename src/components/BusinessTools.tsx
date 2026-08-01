@@ -31,7 +31,8 @@ import {
   ArrowRight,
   X,
   FileSpreadsheet,
-  Sliders
+  Sliders,
+  Link as LinkIcon
 } from 'lucide-react';
 
 interface BusinessToolsProps {
@@ -277,6 +278,16 @@ export default function BusinessTools({ onNavigate, initialModal }: BusinessTool
       badge: 'Phân tích Chi phí',
       actionText: 'Mở công cụ tính',
       onClick: () => setActiveModal('turnover')
+    },
+    {
+      id: 'url-shortener-app',
+      category: 'templates',
+      title: 'URL Shortener - Rút gọn link chuyên nghiệp',
+      desc: 'Công cụ rút gọn link giao diện Dark Mode hiện đại, hỗ trợ tạo slug tùy chỉnh và đếm lượt nhấp chuột trực tiếp.',
+      icon: <LinkIcon className="w-6 h-6 text-sky-500" />,
+      badge: 'Công cụ Mới',
+      actionText: 'Mở ứng dụng Rút gọn Link',
+      onClick: () => onNavigate('/tool/rut-gon-link')
     },
     {
       id: 'weighted-scoring-matrix',

@@ -31,7 +31,8 @@ import {
   Map,
   ShieldCheck,
   Briefcase,
-  PieChart
+  PieChart,
+  Link as LinkIcon
 } from 'lucide-react';
 
 interface HomeProps {
@@ -94,6 +95,15 @@ export default function Home({ onNavigate }: HomeProps) {
       tag: "Độc quyền CEO",
       actionText: "Mở ma trận chấm điểm",
       route: "/tool/danh-gia-va-xep-hang-du-an"
+    },
+    {
+      id: "url-shortener",
+      title: "URL Shortener (Rút gọn link)",
+      desc: "Tạo link ngắn gọn, tùy chỉnh mã slug thương hiệu và đếm số lượt nhấp chuột trực quan thời gian thực.",
+      icon: <LinkIcon className="w-6 h-6 text-sky-600" />,
+      tag: "Công cụ Marketing & CEO",
+      actionText: "Rút gọn link ngay",
+      route: "/tool/rut-gon-link"
     },
     {
       id: "roi-calc",
