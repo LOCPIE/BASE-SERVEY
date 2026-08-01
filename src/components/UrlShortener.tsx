@@ -21,7 +21,12 @@ import {
   RefreshCw,
   Zap,
   ShieldCheck,
-  Share2
+  Share2,
+  Lock,
+  KeyRound,
+  Eye,
+  EyeOff,
+  LogOut
 } from 'lucide-react';
 
 interface ShortenedLink {
@@ -103,6 +108,47 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeQrLink, setActiveQrLink] = useState<ShortenedLink | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Authentication State with Password MKTBASE
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('base_url_shortener_auth') === 'true' || localStorage.getItem('base_url_shortener_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput.trim() === 'MKTBASE') {
+      setIsAuthenticated(true);
+      setPasswordError(null);
+      try {
+        sessionStorage.setItem('base_url_shortener_auth', 'true');
+        localStorage.setItem('base_url_shortener_auth', 'true');
+      } catch (err) {
+        console.error('Storage auth error', err);
+      }
+    } else {
+      setPasswordError('Mật khẩu không chính xác. Vui lòng thử lại.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setPasswordInput('');
+    setPasswordError(null);
+    try {
+      sessionStorage.removeItem('base_url_shortener_auth');
+      localStorage.removeItem('base_url_shortener_auth');
+    } catch (e) {
+      console.error('Storage logout error', e);
+    }
+  };
 
   // Save links to LocalStorage whenever modified
   useEffect(() => {
@@ -305,6 +351,95 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
     return [...links].sort((a, b) => b.clicks - a.clicks)[0];
   }, [links]);
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col justify-between">
+        <Header onNavigate={onNavigate} activeRoute="/tool" />
+
+        <main className="flex-grow flex items-center justify-center p-6 my-12">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-10 max-w-md w-full text-center shadow-2xl relative overflow-hidden backdrop-blur-xl">
+            {/* Ambient Background Glow */}
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-sky-600/20 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="w-16 h-16 rounded-2xl bg-indigo-950 border border-indigo-800/80 text-indigo-400 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-950/50">
+              <Lock className="w-8 h-8 text-indigo-400" />
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-400 bg-amber-950/80 border border-amber-800/60 px-3.5 py-1 rounded-full mb-3 shadow-sm">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" /> Yêu cầu Mật khẩu Bảo vệ
+            </div>
+
+            <h1 className="text-2xl font-black text-white mb-2">
+              Rút Gọn Link Base.vn
+            </h1>
+
+            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+              Vui lòng nhập mật khẩu xác thực dành riêng cho đội ngũ Marketing & Admin để tiếp tục.
+            </p>
+
+            <form onSubmit={handlePasswordSubmit} className="space-y-4 text-left relative z-10">
+              <div>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-2">
+                  Nhập mật khẩu (Password)
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      if (passwordError) setPasswordError(null);
+                    }}
+                    placeholder="••••••••"
+                    autoFocus
+                    className="w-full pl-10 pr-10 py-3.5 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-mono transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {passwordError && (
+                <div className="p-3.5 bg-rose-950/80 border border-rose-800/80 rounded-2xl text-rose-300 text-xs flex items-center gap-2.5 animate-shake">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{passwordError}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-sky-500 hover:from-indigo-500 hover:to-sky-400 text-white font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg shadow-indigo-600/30 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Lock className="w-4 h-4" /> Xác nhận Mật khẩu
+              </button>
+            </form>
+
+            <div className="mt-6 pt-6 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+              <button
+                onClick={() => onNavigate('/tool')}
+                className="text-slate-400 hover:text-indigo-400 transition-colors cursor-pointer inline-flex items-center gap-1 font-medium"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" /> Quay lại Free Tools
+              </button>
+              <span className="font-mono text-[10px] text-slate-600">Base.vn MKT Tool</span>
+            </div>
+          </div>
+        </main>
+
+        <Footer onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white flex flex-col">
       <Header onNavigate={onNavigate} activeRoute="/tool" />
@@ -320,9 +455,18 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
             <ChevronLeft className="w-4 h-4" /> Quay lại Free Tools
           </button>
 
-          <span className="text-xs text-slate-500 font-mono">
-            /tool/rut-gon-link
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-500 font-mono hidden sm:inline">
+              /tool/rut-gon-link
+            </span>
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-rose-400 transition-colors bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800 cursor-pointer"
+              title="Khóa công cụ"
+            >
+              <LogOut className="w-3.5 h-3.5 text-amber-400" /> Khóa
+            </button>
+          </div>
         </div>
 
         {/* Hero Section Header */}
