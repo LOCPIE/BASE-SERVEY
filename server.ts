@@ -21,6 +21,27 @@ async function startServer() {
     res.json({ status: 'ok', environment: process.env.NODE_ENV || 'development' });
   });
 
+  // Short URL server-side redirect endpoint
+  app.get('/s/:slug', (req, res, next) => {
+    const slug = (req.params.slug || '').trim().toLowerCase();
+    
+    // Server-side default redirect dictionary
+    const KNOWN_REDIRECTS: Record<string, string> = {
+      'ebook-ai': 'https://signup.base.vn/ebook-ai-trong-quan-tri-doanh-nghiep/?utm_source=marketing',
+      'demo-base-ai': 'https://base.vn/dang-ky-demo?utm_source=survey&utm_medium=website_tool',
+      'prompt-ceo-2026': 'https://base.vn/blog/prompt-library-for-ceos',
+      'dx-framework': 'https://base.vn/solutions/digital-transformation'
+    };
+
+    if (KNOWN_REDIRECTS[slug]) {
+      console.log(`[ShortLink Server Redirect] Redirecting /s/${slug} -> ${KNOWN_REDIRECTS[slug]}`);
+      return res.redirect(302, KNOWN_REDIRECTS[slug]);
+    }
+
+    // Fallback to SPA static handling
+    next();
+  });
+
   // API Route for quiz submission
   app.post('/api/submit-quiz', async (req, res) => {
     try {

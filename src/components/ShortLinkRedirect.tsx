@@ -112,10 +112,16 @@ export default function ShortLinkRedirect({ slug, onNavigate }: ShortLinkRedirec
         console.error('Failed to update click count', e);
       }
 
-      // Redirect immediately or after tiny delay
+      // Redirect immediately
+      try {
+        window.location.href = matched.originalUrl;
+      } catch (err) {
+        console.error('Redirect failed', err);
+      }
+
       const timer = setTimeout(() => {
         window.location.replace(matched.originalUrl);
-      }, 500);
+      }, 300);
 
       return () => clearTimeout(timer);
     } else {
