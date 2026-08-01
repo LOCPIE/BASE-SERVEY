@@ -148,6 +148,38 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
     }
   };
 
+  // Check if a slug is already taken in state or storage
+  const checkIsSlugTaken = (slugToCheck: string): boolean => {
+    if (!slugToCheck.trim()) return false;
+    const clean = slugToCheck.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+    if (!clean) return false;
+
+    // 1. Check current state
+    if (links.some(l => l.shortSlug.toLowerCase() === clean)) {
+      return true;
+    }
+
+    // 2. Check localStorage storage
+    try {
+      const saved = localStorage.getItem('base_url_shortener_links');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((l: ShortenedLink) => l.shortSlug && l.shortSlug.toLowerCase() === clean)) {
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error('Storage read error', e);
+    }
+
+    // 3. Check default links list
+    if (DEFAULT_DEMO_LINKS.some(d => d.shortSlug.toLowerCase() === clean)) {
+      return true;
+    }
+
+    return false;
+  };
+
   // Handle URL Shortening
   const handleShorten = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,17 +201,17 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
     let finalSlug = customSlug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
 
     if (!finalSlug) {
-      // Generate random slug
+      // Generate random slug that is not taken
       let randomSlug = generateRandomSlug();
-      while (links.some(l => l.shortSlug.toLowerCase() === randomSlug.toLowerCase())) {
+      while (checkIsSlugTaken(randomSlug)) {
         randomSlug = generateRandomSlug();
       }
       finalSlug = randomSlug;
     } else {
-      // Check duplicate custom slug
-      const isDuplicate = links.some(l => l.shortSlug.toLowerCase() === finalSlug.toLowerCase());
-      if (isDuplicate) {
-        setError(`Mã rút gọn "${finalSlug}" đã được sử dụng. Vui lòng chọn mã tùy chỉnh khác.`);
+      // Check duplicate custom slug in database/storage before saving
+      const isTaken = checkIsSlugTaken(finalSlug);
+      if (isTaken) {
+        setError(`Mã rút gọn "${finalSlug}" đã tồn tại trong cơ sở dữ liệu/bộ nhớ. Vui lòng nhập mã custom slug khác!`);
         return;
       }
     }
@@ -336,8 +368,13 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
 
               {/* Input 2: Custom Slug */}
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-2">
-                  2. Tùy chỉnh mã ngắn gọn (Custom Slug) <span className="text-slate-500 font-normal lowercase">(không bắt buộc)</span>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-300 mb-2 flex items-center justify-between">
+                  <span>2. Tùy chỉnh mã ngắn gọn (Custom Slug) <span className="text-slate-500 font-normal lowercase">(không bắt buộc)</span></span>
+                  {customSlug.trim() && checkIsSlugTaken(customSlug) && (
+                    <span className="text-[11px] font-bold text-rose-400 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Mã đã được sử dụng
+                    </span>
+                  )}
                 </label>
                 <div className="flex flex-col sm:flex-row items-stretch gap-2">
                   <div className="bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-xs font-mono text-slate-500 flex items-center whitespace-nowrap">
@@ -347,9 +384,16 @@ export default function UrlShortener({ onNavigate }: UrlShortenerProps) {
                     <input
                       type="text"
                       value={customSlug}
-                      onChange={(e) => setCustomSlug(e.target.value)}
+                      onChange={(e) => {
+                        setCustomSlug(e.target.value);
+                        if (error) setError(null);
+                      }}
                       placeholder="e.g. demo-ai-2026"
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm font-mono transition-all"
+                      className={`w-full px-4 py-3 bg-slate-950 border ${
+                        customSlug.trim() && checkIsSlugTaken(customSlug)
+                          ? 'border-rose-500/80 focus:border-rose-500 focus:ring-rose-500/20'
+                          : 'border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20'
+                      } rounded-2xl text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-2 text-sm font-mono transition-all`}
                     />
                   </div>
                 </div>
